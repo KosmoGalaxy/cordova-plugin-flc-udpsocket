@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        id="cordova-plugin-flc-udpsocket" version="1.0.0">
+    <name>cordova-plugin-flc-udpsocket</name>
+    <description>Cordova FullLegitCode UDP Socket Plugin</description>
+    <license>Apache 2.0</license>
+    <keywords>cordova,flc,udp,datagram,socket</keywords>
+
+    <js-module src="www/udpsocket.js" name="FlcUdpSocket">
+        <clobbers target="cordova.plugins.FlcUdpSocket" />
+    </js-module>
+</plugin>
