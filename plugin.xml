@@ -10,4 +10,18 @@
     <js-module src="www/udpsocket.js" name="FlcUdpSocket">
         <clobbers target="cordova.plugins.FlcUdpSocket" />
     </js-module>
+
+    <platform name="android">
+        <config-file target="AndroidManifest.xml" parent="/manifest">
+            <uses-permission android:name="android.permission.INTERNET"/>
+        </config-file>
+
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="FlcUdpSocket" >
+                <param name="android-package" value="pl.fulllegitcode.udpsocket.UdpSocket"/>
+            </feature>
+        </config-file>
+
+        <source-file src="src/android/pl/fulllegitcode/udpsocket/UdpSocket.java" target-dir="src/pl/fulllegitcode/udpsocket" />
+    </platform>
 </plugin>
