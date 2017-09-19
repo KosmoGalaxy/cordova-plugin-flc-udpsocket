@@ -15,7 +15,7 @@ import java.net.UnknownHostException;
 
 public class UdpSocket extends CordovaPlugin {
 
-    private SparseArray<DatagramSocket> _sockets = new SparseArray<>();
+    private SparseArray<DatagramSocket> _sockets = new SparseArray<DatagramSocket>();
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
