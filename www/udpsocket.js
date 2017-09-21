@@ -15,4 +15,14 @@ UdpSocket.prototype.send = function(ip, port, packet) {
   );
 };
 
+UdpSocket.prototype.broadcast = function(port, packet) {
+  exec(
+    function() {},
+    function() {},
+    'FlcUdpSocket',
+    'broadcast',
+    [this.id, port, packet]
+  );
+};
+
 module.exports = UdpSocket;
