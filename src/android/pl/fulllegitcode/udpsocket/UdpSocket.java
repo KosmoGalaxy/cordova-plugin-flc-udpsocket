@@ -63,7 +63,7 @@ public class UdpSocket extends CordovaPlugin {
     }
 
     private void _executeNext() {
-        if (cordova.hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+        if (cordova.hasPermission(Manifest.permission.ACCESS_WIFI_STATE)) {
             if (!_executions.isEmpty()) {
                 Execution execution = _executions.get(0);
                 _executions.remove(0);
@@ -73,7 +73,7 @@ public class UdpSocket extends CordovaPlugin {
         } else if (!_werePermissionsRequested) {
             _log("requesting permission");
             _werePermissionsRequested = true;
-            cordova.requestPermission(this, 0, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            cordova.requestPermission(this, 0, Manifest.permission.ACCESS_WIFI_STATE);
         }
     }
 
