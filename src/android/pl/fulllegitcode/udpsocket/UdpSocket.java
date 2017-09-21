@@ -16,7 +16,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.TreeSet;
+import java.util.ArrayList;
 
 import static android.content.Context.WIFI_SERVICE;
 
@@ -38,7 +38,7 @@ public class UdpSocket extends CordovaPlugin {
 
 
 
-    private TreeSet<Execution> _executions = new TreeSet<Execution>();
+    private ArrayList<Execution> _executions = new ArrayList<Execution>();
     private SparseArray<DatagramSocket> _sockets = new SparseArray<DatagramSocket>();
     private boolean _werePermissionsRequested = false;
 
@@ -61,8 +61,9 @@ public class UdpSocket extends CordovaPlugin {
 
     private void _executeNext() {
         if (cordova.hasPermission(Manifest.permission.ACCESS_WIFI_STATE)) {
-            Execution execution = _executions.pollFirst();
-            if (execution != null) {
+            if (!_executions.isEmpty()) {
+                Execution execution = _executions.get(0);
+                _executions.remove(0);
                 _execute(execution);
                 _executeNext();
             }
