@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
+import android.util.Log;
 import android.util.SparseArray;
 
 import org.apache.cordova.CallbackContext;
@@ -45,6 +46,7 @@ public class UdpSocket extends CordovaPlugin {
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         if (action.equals("send") || action.equals("broadcast")) {
+            _log("add execution: " + action);
             _executions.add(new Execution(action, args, callbackContext));
             _executeNext();
             return true;
@@ -54,13 +56,14 @@ public class UdpSocket extends CordovaPlugin {
 
     @Override
     public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) throws JSONException {
+        _log("permission request result: " + (grantResults[0] == PackageManager.PERMISSION_GRANTED ? "granted" : "denied"));
         if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             _executeNext();
         }
     }
 
     private void _executeNext() {
-        if (cordova.hasPermission(Manifest.permission.ACCESS_WIFI_STATE)) {
+        if (cordova.hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             if (!_executions.isEmpty()) {
                 Execution execution = _executions.get(0);
                 _executions.remove(0);
@@ -68,8 +71,9 @@ public class UdpSocket extends CordovaPlugin {
                 _executeNext();
             }
         } else if (!_werePermissionsRequested) {
+            _log("requesting permission");
             _werePermissionsRequested = true;
-            cordova.requestPermission(this, 0, Manifest.permission.ACCESS_WIFI_STATE);
+            cordova.requestPermission(this, 0, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         }
     }
 
@@ -77,6 +81,7 @@ public class UdpSocket extends CordovaPlugin {
         String action = execution.action;
         JSONArray args = execution.args;
         CallbackContext callbackContext = execution.callbackContext;
+        _log("execute: " + action);
         try {
             DatagramSocket socket = _getSocket(args.getInt(0));
             if (socket != null) {
@@ -153,4 +158,9 @@ public class UdpSocket extends CordovaPlugin {
             return null;
         }
     }
+
+    private void _log(String message) {
+        Log.d("FlcUdpSocket", message);
+    }
+
 }
