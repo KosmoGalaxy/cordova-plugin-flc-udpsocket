@@ -25,4 +25,16 @@ UdpSocket.prototype.broadcast = function(port, packet) {
   );
 };
 
+UdpSocket.prototype.receive = function(port, callback) {
+  exec(
+    function(payload) {
+      callback(payload.packet, payload.ip, payload.port);
+    },
+    function() {},
+    'FlcUdpSocket',
+    'receive',
+    [this.id, port]
+  );
+};
+
 module.exports = UdpSocket;
