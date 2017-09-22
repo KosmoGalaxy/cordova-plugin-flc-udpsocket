@@ -23,6 +23,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Locale;
 
 import static android.content.Context.WIFI_SERVICE;
 
@@ -51,7 +52,6 @@ public class UdpSocket extends CordovaPlugin {
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         if (action.equals("send") || action.equals("broadcast") || action.equals("receive")) {
-            _log("add execution: " + action);
             _executions.add(new Execution(action, args, callbackContext));
             _executeNext();
             return true;
@@ -86,8 +86,8 @@ public class UdpSocket extends CordovaPlugin {
         String action = execution.action;
         JSONArray args = execution.args;
         CallbackContext callbackContext = execution.callbackContext;
-        _log("execute: " + action);
         try {
+            _log(String.format(Locale.ENGLISH, "execute: id=%d action=%s", args.getInt(0), action));
             if ("send".equals(action)) {
                 _send(args.getInt(0), args.getString(1), args.getInt(2), args.getString(3));
                 callbackContext.success();
