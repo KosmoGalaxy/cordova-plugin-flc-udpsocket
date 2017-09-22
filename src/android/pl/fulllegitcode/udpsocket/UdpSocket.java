@@ -136,7 +136,7 @@ public class UdpSocket extends CordovaPlugin {
                         socket.receive(packet);
                         JSONObject payload = new JSONObject();
                         payload.put("packet", new String(packet.getData(), 0, packet.getLength()));
-                        payload.put("ip", packet.getAddress());
+                        payload.put("ip", packet.getAddress().getHostName());
                         payload.put("port", packet.getPort());
                         PluginResult result = new PluginResult(PluginResult.Status.OK, payload);
                         result.setKeepCallback(true);
