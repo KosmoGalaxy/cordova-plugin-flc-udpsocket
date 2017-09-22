@@ -152,7 +152,7 @@ public class UdpSocket extends CordovaPlugin {
     private DatagramSocket _getSocket(int id) throws SocketException {
         DatagramSocket socket = _sockets.get(id);
         if (socket == null) {
-            socket = new DatagramSocket();
+            socket = new DatagramSocket(null);
             _sockets.put(id, socket);
         }
         return socket;
