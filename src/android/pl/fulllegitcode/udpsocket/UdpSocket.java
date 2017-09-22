@@ -10,13 +10,18 @@ import android.util.SparseArray;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import static android.content.Context.WIFI_SERVICE;
@@ -45,7 +50,7 @@ public class UdpSocket extends CordovaPlugin {
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-        if (action.equals("send") || action.equals("broadcast")) {
+        if (action.equals("send") || action.equals("broadcast") || action.equals("receive")) {
             _log("add execution: " + action);
             _executions.add(new Execution(action, args, callbackContext));
             _executeNext();
@@ -83,84 +88,97 @@ public class UdpSocket extends CordovaPlugin {
         CallbackContext callbackContext = execution.callbackContext;
         _log("execute: " + action);
         try {
-            DatagramSocket socket = _getSocket(args.getInt(0));
-            if (socket != null) {
-                if ("send".equals(action)) {
-                    if (_send(socket, args.getString(1), args.getInt(2), args.getString(3))) {
-                        callbackContext.success();
-                        return;
-                    }
-                } else if ("broadcast".equals(action)) {
-                    if (_broadcast(socket, args.getInt(1), args.getString(2))) {
-                        callbackContext.success();
-                        return;
-                    }
-                }
+            if ("send".equals(action)) {
+                _send(args.getInt(0), args.getString(1), args.getInt(2), args.getString(3));
+                callbackContext.success();
+                return;
+            } else if ("broadcast".equals(action)) {
+                _broadcast(args.getInt(0), args.getInt(1), args.getString(2));
+                callbackContext.success();
+                return;
+            } else if ("receive".equals(action)) {
+                _receive(args.getInt(0), args.getInt(1), callbackContext);
+                return;
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            _logError(e.getMessage());
+        }
         callbackContext.error("error");
     }
 
-    private DatagramSocket _getSocket(int id) {
+    private void _send(int id, String ip, int port, String packetString) throws IOException {
+        DatagramSocket socket = _getSocket(id);
+        byte[] bytes = packetString.getBytes();
+        DatagramPacket packet = new DatagramPacket(bytes, bytes.length, InetAddress.getByName(ip), port);
+        socket.send(packet);
+    }
+
+    private void _broadcast(int id, int port, String packetString) throws IOException {
+        DatagramSocket socket = _getSocket(id);
+        InetAddress address = _getBroadcastAddress();
+        if (address != null) {
+            byte[] bytes = packetString.getBytes();
+            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, port);
+            socket.send(packet);
+        }
+    }
+
+    private void _receive(int id, int port, final CallbackContext callbackContext) throws IOException {
+        final DatagramSocket socket = _getSocket(id);
+        socket.bind(new InetSocketAddress(port));
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                byte[] bytes = new byte[10 * 1024];
+                DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
+                try {
+                    while (true) {
+                        socket.receive(packet);
+                        JSONObject payload = new JSONObject();
+                        payload.put("packet", new String(packet.getData(), 0, packet.getLength()));
+                        payload.put("ip", packet.getAddress());
+                        payload.put("port", packet.getPort());
+                        PluginResult result = new PluginResult(PluginResult.Status.OK, payload);
+                        result.setKeepCallback(true);
+                        callbackContext.sendPluginResult(result);
+                    }
+                } catch (Exception e) {
+                    callbackContext.error("error");
+                }
+            }
+        });
+    }
+
+    private DatagramSocket _getSocket(int id) throws SocketException {
         DatagramSocket socket = _sockets.get(id);
         if (socket == null) {
-            try {
-                socket = new DatagramSocket();
-                _sockets.put(id, socket);
-            } catch (SocketException e) {
-                return null;
-            }
+            socket = new DatagramSocket();
+            _sockets.put(id, socket);
         }
         return socket;
     }
 
-    private boolean _send(DatagramSocket socket, String ip, int port, String packetString) {
-        try {
-            byte[] bytes = packetString.getBytes();
-            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, InetAddress.getByName(ip), port);
-            socket.send(packet);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private boolean _broadcast(DatagramSocket socket, int port, String packetString) {
-        InetAddress address = _getBroadcastAddress();
-        if (address != null) {
-            try {
-                byte[] bytes = packetString.getBytes();
-                DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, port);
-                socket.send(packet);
-                return true;
-            } catch (Exception e) {
-                return false;
-            }
-        }
-        return false;
-    }
-
-    private InetAddress _getBroadcastAddress() {
-        try {
-            Context context = cordova.getActivity().getApplicationContext();
-            WifiManager myWifiManager = (WifiManager) context.getSystemService(WIFI_SERVICE);
-            DhcpInfo myDhcpInfo = myWifiManager.getDhcpInfo();
-            if (myDhcpInfo == null) {
-                return null;
-            }
-            int broadcast = (myDhcpInfo.ipAddress & myDhcpInfo.netmask) | ~myDhcpInfo.netmask;
-            byte[] quads = new byte[4];
-            for (int k = 0; k < 4; k++) {
-                quads[k] = (byte)((broadcast >> k * 8) & 0xFF);
-            }
-            return InetAddress.getByAddress(quads);
-        } catch (Exception e) {
+    private InetAddress _getBroadcastAddress() throws UnknownHostException {
+        Context context = cordova.getActivity().getApplicationContext();
+        WifiManager myWifiManager = (WifiManager) context.getSystemService(WIFI_SERVICE);
+        DhcpInfo myDhcpInfo = myWifiManager.getDhcpInfo();
+        if (myDhcpInfo == null) {
             return null;
         }
+        int broadcast = (myDhcpInfo.ipAddress & myDhcpInfo.netmask) | ~myDhcpInfo.netmask;
+        byte[] quads = new byte[4];
+        for (int k = 0; k < 4; k++) {
+            quads[k] = (byte)((broadcast >> k * 8) & 0xFF);
+        }
+        return InetAddress.getByAddress(quads);
     }
 
     private void _log(String message) {
         Log.d("FlcUdpSocket", message);
+    }
+
+    private void _logError(String message) {
+        Log.e("FlcUdpSocket", message);
     }
 
 }
