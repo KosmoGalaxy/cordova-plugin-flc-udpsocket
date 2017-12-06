@@ -23,7 +23,6 @@ import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Locale;
 
 import static android.content.Context.WIFI_SERVICE;
 
@@ -49,6 +48,7 @@ public class UdpSocket extends CordovaPlugin {
     private SparseArray<DatagramSocket> _sockets = new SparseArray<DatagramSocket>();
     private boolean _werePermissionsRequested = false;
     private WifiManager.WifiLock _wifiLock = null;
+    private WifiManager.MulticastLock _multicastLock = null;
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -78,7 +78,8 @@ public class UdpSocket extends CordovaPlugin {
 
     private void _executeNext() {
         if (cordova.hasPermission(Manifest.permission.ACCESS_WIFI_STATE)
-            && cordova.hasPermission(Manifest.permission.WAKE_LOCK)) {
+            && cordova.hasPermission(Manifest.permission.WAKE_LOCK)
+            && cordova.hasPermission(Manifest.permission.CHANGE_WIFI_MULTICAST_STATE)) {
             if (!_executions.isEmpty()) {
                 Execution execution = _executions.get(0);
                 _executions.remove(0);
@@ -88,12 +89,16 @@ public class UdpSocket extends CordovaPlugin {
             if (_wifiLock == null) {
                 _lockWifi();
             }
+            if (_multicastLock == null) {
+                _lockMulticast();
+            }
         } else if (!_werePermissionsRequested) {
             _log("requesting permissions");
             _werePermissionsRequested = true;
             cordova.requestPermissions(this, 0, new String[] {
                 Manifest.permission.ACCESS_WIFI_STATE,
-                Manifest.permission.WAKE_LOCK
+                Manifest.permission.WAKE_LOCK,
+                Manifest.permission.CHANGE_WIFI_MULTICAST_STATE
             });
         }
     }
@@ -197,6 +202,14 @@ public class UdpSocket extends CordovaPlugin {
         _wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL, "UdpSocket");
         _wifiLock.acquire();
         _log(String.format("WifiLock: %b", _wifiLock.isHeld()));
+    }
+
+    private void _lockMulticast() {
+        Context context = cordova.getActivity().getApplicationContext();
+        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        _multicastLock = wifiManager.createMulticastLock("UdpSocket");
+        _multicastLock.acquire();
+        _log(String.format("MulticastLock: %b", _multicastLock.isHeld()));
     }
 
     private void _log(String message) {
