@@ -48,6 +48,7 @@ public class UdpSocket extends CordovaPlugin {
     private ArrayList<Execution> _executions = new ArrayList<Execution>();
     private SparseArray<DatagramSocket> _sockets = new SparseArray<DatagramSocket>();
     private boolean _werePermissionsRequested = false;
+    private WifiManager.WifiLock _wifiLock = null;
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -61,24 +62,39 @@ public class UdpSocket extends CordovaPlugin {
 
     @Override
     public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) throws JSONException {
-        _log("permission request result: " + (grantResults[0] == PackageManager.PERMISSION_GRANTED ? "granted" : "denied"));
-        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        boolean canExecute = true;
+        for (int i = 0; i < permissions.length; i++) {
+            String permission = permissions[i];
+            int result = grantResults[i];
+            _log("permission " + permission + ": " + (result == PackageManager.PERMISSION_GRANTED ? "granted" : "denied"));
+            if (result == PackageManager.PERMISSION_DENIED) {
+                canExecute = false;
+            }
+        }
+        if (canExecute) {
             _executeNext();
         }
     }
 
     private void _executeNext() {
-        if (cordova.hasPermission(Manifest.permission.ACCESS_WIFI_STATE)) {
+        if (cordova.hasPermission(Manifest.permission.ACCESS_WIFI_STATE)
+            && cordova.hasPermission(Manifest.permission.WAKE_LOCK)) {
             if (!_executions.isEmpty()) {
                 Execution execution = _executions.get(0);
                 _executions.remove(0);
                 _execute(execution);
                 _executeNext();
             }
+            if (_wifiLock == null) {
+                _lockWifi();
+            }
         } else if (!_werePermissionsRequested) {
-            _log("requesting permission");
+            _log("requesting permissions");
             _werePermissionsRequested = true;
-            cordova.requestPermission(this, 0, Manifest.permission.ACCESS_WIFI_STATE);
+            cordova.requestPermissions(this, 0, new String[] {
+                Manifest.permission.ACCESS_WIFI_STATE,
+                Manifest.permission.WAKE_LOCK
+            });
         }
     }
 
@@ -129,22 +145,22 @@ public class UdpSocket extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
-                byte[] bytes = new byte[10 * 1024];
-                DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
-                try {
-                    while (true) {
-                        socket.receive(packet);
-                        JSONObject payload = new JSONObject();
-                        payload.put("packet", new String(packet.getData(), 0, packet.getLength()));
-                        payload.put("ip", packet.getAddress().getHostName());
-                        payload.put("port", packet.getPort());
-                        PluginResult result = new PluginResult(PluginResult.Status.OK, payload);
-                        result.setKeepCallback(true);
-                        callbackContext.sendPluginResult(result);
-                    }
-                } catch (Exception e) {
-                    callbackContext.error("error");
+            byte[] bytes = new byte[10 * 1024];
+            DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
+            try {
+                while (true) {
+                    socket.receive(packet);
+                    JSONObject payload = new JSONObject();
+                    payload.put("packet", new String(packet.getData(), 0, packet.getLength()));
+                    payload.put("ip", packet.getAddress().getHostName());
+                    payload.put("port", packet.getPort());
+                    PluginResult result = new PluginResult(PluginResult.Status.OK, payload);
+                    result.setKeepCallback(true);
+                    callbackContext.sendPluginResult(result);
                 }
+            } catch (Exception e) {
+                callbackContext.error("error");
+            }
             }
         });
     }
@@ -171,6 +187,13 @@ public class UdpSocket extends CordovaPlugin {
             quads[k] = (byte)((broadcast >> k * 8) & 0xFF);
         }
         return InetAddress.getByAddress(quads);
+    }
+
+    private void _lockWifi() {
+        Context context = cordova.getActivity().getApplicationContext();
+        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        _wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL, "UdpSocket");
+        _wifiLock.acquire();
     }
 
     private void _log(String message) {
