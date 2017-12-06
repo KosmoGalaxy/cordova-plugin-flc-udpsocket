@@ -103,7 +103,7 @@ public class UdpSocket extends CordovaPlugin {
         JSONArray args = execution.args;
         CallbackContext callbackContext = execution.callbackContext;
         try {
-            _log(String.format(Locale.ENGLISH, "execute: id=%d action=%s", args.getInt(0), action));
+//            _log(String.format(Locale.ENGLISH, "execute: id=%d action=%s", args.getInt(0), action));
             if ("send".equals(action)) {
                 _send(args.getInt(0), args.getString(1), args.getInt(2), args.getString(3));
                 callbackContext.success();
@@ -194,6 +194,7 @@ public class UdpSocket extends CordovaPlugin {
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         _wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL, "UdpSocket");
         _wifiLock.acquire();
+        _log(String.format("WifiLock: %b", _wifiLock.isHeld()));
     }
 
     private void _log(String message) {
