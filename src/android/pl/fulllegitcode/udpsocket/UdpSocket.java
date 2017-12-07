@@ -108,7 +108,6 @@ public class UdpSocket extends CordovaPlugin {
         JSONArray args = execution.args;
         CallbackContext callbackContext = execution.callbackContext;
         try {
-//            _log(String.format(Locale.ENGLISH, "execute: id=%d action=%s", args.getInt(0), action));
             if ("send".equals(action)) {
                 _send(args.getInt(0), args.getString(1), args.getInt(2), args.getString(3));
                 callbackContext.success();
@@ -138,9 +137,12 @@ public class UdpSocket extends CordovaPlugin {
         DatagramSocket socket = _getSocket(id);
         InetAddress address = _getBroadcastAddress();
         if (address != null) {
+            _log(String.format("broadcast: %s %s", address, packetString));
             byte[] bytes = packetString.getBytes();
             DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, port);
             socket.send(packet);
+        } else {
+            _logError("broadcast error: cannot resolve address");
         }
     }
 
