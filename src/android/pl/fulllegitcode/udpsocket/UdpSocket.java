@@ -178,6 +178,8 @@ public class UdpSocket extends CordovaPlugin {
         DatagramSocket socket = _sockets.get(id);
         if (socket == null) {
             socket = new DatagramSocket(null);
+            socket.setBroadcast(true);
+            socket.setReuseAddress(true);
             _sockets.put(id, socket);
         }
         return socket;
