@@ -23,6 +23,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Locale;
 
 import static android.content.Context.WIFI_SERVICE;
 
@@ -130,17 +131,25 @@ public class UdpSocket extends CordovaPlugin {
         DatagramSocket socket = _getSocket(id);
         byte[] bytes = packetString.getBytes();
         DatagramPacket packet = new DatagramPacket(bytes, bytes.length, InetAddress.getByName(ip), port);
-        socket.send(packet);
+        try {
+            socket.send(packet);
+        } catch (Exception e) {
+            _logError(String.format(Locale.ENGLISH, "send error. ip=%s port=%d packet=%s message=%s", ip, port, packetString, e.getMessage()));
+        }
     }
 
     private void _broadcast(int id, int port, String packetString) throws IOException {
         DatagramSocket socket = _getSocket(id);
         InetAddress address = _getBroadcastAddress();
         if (address != null) {
-            _log(String.format("broadcast: %s %s", address, packetString));
+//            _log(String.format("broadcast: %s %s", address, packetString));
             byte[] bytes = packetString.getBytes();
             DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, port);
-            socket.send(packet);
+            try {
+                socket.send(packet);
+            } catch (Exception e) {
+                _logError(String.format(Locale.ENGLISH, "broadcast error. ip=%s port=%d packet=%s message=%s", address, port, packetString, e.getMessage()));
+            }
         } else {
             _logError("broadcast error: cannot resolve address");
         }
@@ -168,6 +177,7 @@ public class UdpSocket extends CordovaPlugin {
                     callbackContext.sendPluginResult(result);
                 }
             } catch (Exception e) {
+                _logError("receive error: " + e.getMessage());
                 callbackContext.error("error");
             }
             }
