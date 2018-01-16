@@ -128,13 +128,14 @@ public class UdpSocket extends CordovaPlugin {
     }
 
     private void _send(int id, String ip, int port, String packetString) throws IOException {
+        _log(String.format(Locale.ENGLISH, "@send. address=%s:%d packet=%s", ip, port, packetString.substring(0, 100)));
         DatagramSocket socket = _getSocket(id);
         byte[] bytes = packetString.getBytes();
         DatagramPacket packet = new DatagramPacket(bytes, bytes.length, InetAddress.getByName(ip), port);
         try {
             socket.send(packet);
         } catch (Exception e) {
-            _logError(String.format(Locale.ENGLISH, "send error. ip=%s port=%d packet=%s message=%s", ip, port, packetString, e.getMessage()));
+            _logError(String.format(Locale.ENGLISH, "@error. message=%s", e.getMessage()));
         }
     }
 
