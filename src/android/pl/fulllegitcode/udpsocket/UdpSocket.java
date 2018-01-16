@@ -162,27 +162,27 @@ public class UdpSocket extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
-            byte[] bytes = new byte[10 * 1024];
-            DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
-            try {
-                while (true) {
-                    socket.receive(packet);
-                    String data = new String(packet.getData(), 0, packet.getLength());
-                    String ip = packet.getAddress().getHostAddress();
-                    int port = packet.getPort();
-                    _log(String.format(Locale.ENGLISH, "@receive. address=%s:%d packet=%s", ip, port, data.substring(0, 100)));
-                    JSONObject payload = new JSONObject();
-                    payload.put("packet", data);
-                    payload.put("ip", ip);
-                    payload.put("port", port);
-                    PluginResult result = new PluginResult(PluginResult.Status.OK, payload);
-                    result.setKeepCallback(true);
-                    callbackContext.sendPluginResult(result);
+                byte[] bytes = new byte[2 * 1024];
+                DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
+                try {
+                    while (true) {
+                        socket.receive(packet);
+                        String data = new String(packet.getData(), 0, packet.getLength());
+                        String ip = packet.getAddress().getHostAddress();
+                        int port = packet.getPort();
+                        _log(String.format(Locale.ENGLISH, "@receive. address=%s:%d packet=%s", ip, port, data.substring(0, 100)));
+                        JSONObject payload = new JSONObject();
+                        payload.put("packet", data);
+                        payload.put("ip", ip);
+                        payload.put("port", port);
+                        PluginResult result = new PluginResult(PluginResult.Status.OK, payload);
+                        result.setKeepCallback(true);
+                        callbackContext.sendPluginResult(result);
+                    }
+                } catch (Exception e) {
+                    _logError(String.format(Locale.ENGLISH, "@error. message=%s", e.getMessage()));
+                    callbackContext.error("error");
                 }
-            } catch (Exception e) {
-                _logError("receive error: " + e.getMessage());
-                callbackContext.error("error");
-            }
             }
         });
     }
