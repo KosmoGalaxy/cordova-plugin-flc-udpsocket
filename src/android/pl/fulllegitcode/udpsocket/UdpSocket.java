@@ -162,7 +162,7 @@ public class UdpSocket extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
-                byte[] bytes = new byte[4 * 1024];
+                byte[] bytes = new byte[8 * 1024];
                 DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
                 try {
                     while (true) {
