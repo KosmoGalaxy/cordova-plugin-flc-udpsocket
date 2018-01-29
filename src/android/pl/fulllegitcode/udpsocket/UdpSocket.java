@@ -87,7 +87,8 @@ public class UdpSocket extends CordovaPlugin {
 
     @Override
     public void onDestroy() {
-        _log("destroy");
+        _log("destroy 1");
+        _log("" + _sockets.size());
         try {
             _closeAllSockets();
             _unlockWifi();
@@ -260,6 +261,7 @@ public class UdpSocket extends CordovaPlugin {
     }
 
     private void _closeAllSockets() {
+        _log("test");
         _log(String.format(Locale.ENGLISH, "close all sockets. numSockets=%d", _sockets.size()));
         for (int i = 0; i < _sockets.size(); i++) {
             int key = _sockets.keyAt(i);
