@@ -87,6 +87,7 @@ public class UdpSocket extends CordovaPlugin {
 
     @Override
     public void onDestroy() {
+        _log("destroy");
         _closeAllSockets();
         _unlockWifi();
         _unlockMulticast();
