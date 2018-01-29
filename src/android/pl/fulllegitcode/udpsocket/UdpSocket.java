@@ -53,7 +53,7 @@ public class UdpSocket extends CordovaPlugin {
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-        if (action.equals("send") || action.equals("broadcast") || action.equals("receive")) {
+        if (action.equals("send") || action.equals("broadcast") || action.equals("receive") || action.equals("close")) {
             _executions.add(new Execution(action, args, callbackContext));
             _executeNext();
             return true;
@@ -120,6 +120,9 @@ public class UdpSocket extends CordovaPlugin {
             } else if ("receive".equals(action)) {
                 _receive(args.getInt(0), args.getInt(1), callbackContext);
                 return;
+            } else if ("close".equals(action)) {
+                _close(args.getInt(0));
+                return;
             }
         } catch (Exception e) {
             _logError(e.getMessage());
@@ -130,6 +133,9 @@ public class UdpSocket extends CordovaPlugin {
     private void _send(int id, String ip, int port, String packetString) throws IOException {
         _log(String.format(Locale.ENGLISH, "@send. address=%s:%d packet=%s", ip, port, packetString.substring(0, 100)));
         DatagramSocket socket = _getSocket(id);
+        if (socket.isClosed()) {
+            return;
+        }
         byte[] bytes = packetString.getBytes();
         DatagramPacket packet = new DatagramPacket(bytes, bytes.length, InetAddress.getByName(ip), port);
         try {
@@ -141,6 +147,9 @@ public class UdpSocket extends CordovaPlugin {
 
     private void _broadcast(int id, int port, String packetString) throws IOException {
         DatagramSocket socket = _getSocket(id);
+        if (socket.isClosed()) {
+            return;
+        }
         InetAddress address = _getBroadcastAddress();
         if (address != null) {
 //            _log(String.format("broadcast: %s %s", address, packetString));
@@ -158,6 +167,9 @@ public class UdpSocket extends CordovaPlugin {
 
     private void _receive(int id, int port, final CallbackContext callbackContext) throws IOException {
         final DatagramSocket socket = _getSocket(id);
+        if (socket.isClosed()) {
+            return;
+        }
         socket.bind(new InetSocketAddress(port));
         cordova.getThreadPool().execute(new Runnable() {
             @Override
@@ -165,7 +177,7 @@ public class UdpSocket extends CordovaPlugin {
                 byte[] bytes = new byte[8 * 1024];
                 DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
                 try {
-                    while (true) {
+                    while (!socket.isClosed()) {
                         socket.receive(packet);
                         String data = new String(packet.getData(), 0, packet.getLength());
                         String ip = packet.getAddress().getHostAddress();
@@ -187,6 +199,14 @@ public class UdpSocket extends CordovaPlugin {
         });
     }
 
+    private void _close(int id) throws SocketException {
+        _closeSocket(id);
+    }
+
+    private boolean _socketExists(int id) {
+        return _sockets.get(id) != null;
+    }
+
     private DatagramSocket _getSocket(int id) throws SocketException {
         DatagramSocket socket = _sockets.get(id);
         if (socket == null) {
@@ -196,6 +216,13 @@ public class UdpSocket extends CordovaPlugin {
             _sockets.put(id, socket);
         }
         return socket;
+    }
+
+    private void _closeSocket(int id) throws SocketException {
+        if (_socketExists(id)) {
+            DatagramSocket socket = _getSocket(id);
+            socket.close();
+        }
     }
 
     private InetAddress _getBroadcastAddress() throws UnknownHostException {
