@@ -9,7 +9,9 @@ import android.util.Log;
 import android.util.SparseArray;
 
 import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -52,6 +54,12 @@ public class UdpSocket extends CordovaPlugin {
     private WifiManager.MulticastLock _multicastLock = null;
 
     @Override
+    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+        _log("initialize");
+        super.initialize(cordova, webView);
+    }
+
+    @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         if (action.equals("send") || action.equals("broadcast") || action.equals("receive") || action.equals("close")) {
             _executions.add(new Execution(action, args, callbackContext));
@@ -80,6 +88,8 @@ public class UdpSocket extends CordovaPlugin {
     @Override
     public void onDestroy() {
         _closeAllSockets();
+        _unlockWifi();
+        _unlockMulticast();
         super.onDestroy();
     }
 
@@ -131,7 +141,7 @@ public class UdpSocket extends CordovaPlugin {
                 return;
             }
         } catch (Exception e) {
-            _logError(e.getMessage());
+            _logError(String.format(Locale.ENGLISH, "error. message=%s", e.getMessage()));
         }
         callbackContext.error("error");
     }
@@ -228,15 +238,19 @@ public class UdpSocket extends CordovaPlugin {
         if (_socketExists(id)) {
             DatagramSocket socket = _getSocket(id);
             _closeSocket(socket);
+        } else {
+            _log(String.format(Locale.ENGLISH, "close failed. id=%d reason=socket not found", id));
         }
     }
 
     private void _closeSocket(DatagramSocket socket) {
+        int index = _sockets.indexOfValue(socket);
+        int id = _sockets.keyAt(index);
         if (!socket.isClosed()) {
-            int index = _sockets.indexOfValue(socket);
-            int id = _sockets.keyAt(index);
             _log(String.format(Locale.ENGLISH, "close. id=%d", id));
             socket.close();
+        } else {
+            _log(String.format(Locale.ENGLISH, "close failed. id=%d reason=socket already closed", id));
         }
     }
 
@@ -267,16 +281,30 @@ public class UdpSocket extends CordovaPlugin {
         Context context = cordova.getActivity().getApplicationContext();
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         _wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL, "UdpSocket");
+        _wifiLock.setReferenceCounted(true);
         _wifiLock.acquire();
         _log(String.format("WifiLock: %b", _wifiLock.isHeld()));
+    }
+
+    private void _unlockWifi() {
+        if (_wifiLock != null) {
+            _wifiLock.release();
+        }
     }
 
     private void _lockMulticast() {
         Context context = cordova.getActivity().getApplicationContext();
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         _multicastLock = wifiManager.createMulticastLock("UdpSocket");
+        _multicastLock.setReferenceCounted(true);
         _multicastLock.acquire();
         _log(String.format("MulticastLock: %b", _multicastLock.isHeld()));
+    }
+
+    private void _unlockMulticast() {
+        if (_multicastLock != null) {
+            _multicastLock.release();
+        }
     }
 
     private void _log(String message) {
