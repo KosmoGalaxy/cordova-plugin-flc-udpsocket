@@ -137,7 +137,7 @@ public class UdpSocket extends CordovaPlugin {
     }
 
     private void _send(int id, String ip, int port, String packetString) throws IOException {
-        _log(String.format(Locale.ENGLISH, "@send. address=%s:%d packet=%s", ip, port, packetString.substring(0, 100)));
+        _log(String.format(Locale.ENGLISH, "send. id=%d address=%s:%d packet=%s", id, ip, port, packetString.substring(0, 100)));
         DatagramSocket socket = _getSocket(id);
         if (socket.isClosed()) {
             return;
@@ -147,7 +147,7 @@ public class UdpSocket extends CordovaPlugin {
         try {
             socket.send(packet);
         } catch (Exception e) {
-            _logError(String.format(Locale.ENGLISH, "@error. message=%s", e.getMessage()));
+            _logError(String.format(Locale.ENGLISH, "send error. id=%d message=%s", id, e.getMessage()));
         }
     }
 
@@ -164,14 +164,14 @@ public class UdpSocket extends CordovaPlugin {
             try {
                 socket.send(packet);
             } catch (Exception e) {
-                _logError(String.format(Locale.ENGLISH, "broadcast error. ip=%s port=%d packet=%s message=%s", address, port, packetString, e.getMessage()));
+                _logError(String.format(Locale.ENGLISH, "broadcast error. id=%d ip=%s port=%d packet=%s message=%s", id, address, port, packetString, e.getMessage()));
             }
         } else {
-            _logError("broadcast error: cannot resolve address");
+            _logError(String.format(Locale.ENGLISH, "broadcast error. id=%d message=cannot resolve address", id));
         }
     }
 
-    private void _receive(int id, int port, final CallbackContext callbackContext) throws IOException {
+    private void _receive(final int id, int port, final CallbackContext callbackContext) throws IOException {
         final DatagramSocket socket = _getSocket(id);
         if (socket.isClosed()) {
             return;
@@ -188,7 +188,7 @@ public class UdpSocket extends CordovaPlugin {
                         String data = new String(packet.getData(), 0, packet.getLength());
                         String ip = packet.getAddress().getHostAddress();
                         int port = packet.getPort();
-                        _log(String.format(Locale.ENGLISH, "@receive. address=%s:%d packet=%s", ip, port, data.substring(0, 100)));
+                        _log(String.format(Locale.ENGLISH, "receive. id=%d address=%s:%d packet=%s", id, ip, port, data.substring(0, 100)));
                         JSONObject payload = new JSONObject();
                         payload.put("packet", data);
                         payload.put("ip", ip);
@@ -198,7 +198,7 @@ public class UdpSocket extends CordovaPlugin {
                         callbackContext.sendPluginResult(result);
                     }
                 } catch (Exception e) {
-                    _logError(String.format(Locale.ENGLISH, "@error. message=%s", e.getMessage()));
+                    _logError(String.format(Locale.ENGLISH, "receive error. id=%d message=%s", id, e.getMessage()));
                     callbackContext.error("error");
                 }
             }
@@ -233,6 +233,9 @@ public class UdpSocket extends CordovaPlugin {
 
     private void _closeSocket(DatagramSocket socket) {
         if (!socket.isClosed()) {
+            int index = _sockets.indexOfValue(socket);
+            int id = _sockets.keyAt(index);
+            _log(String.format(Locale.ENGLISH, "close. id=%d", id));
             socket.close();
         }
     }
