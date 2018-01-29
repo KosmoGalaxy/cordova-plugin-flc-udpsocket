@@ -88,9 +88,13 @@ public class UdpSocket extends CordovaPlugin {
     @Override
     public void onDestroy() {
         _log("destroy");
-        _closeAllSockets();
-        _unlockWifi();
-        _unlockMulticast();
+        try {
+            _closeAllSockets();
+            _unlockWifi();
+            _unlockMulticast();
+        } catch (Exception e) {
+            _logError(String.format(Locale.ENGLISH, "destroy error. message=%s", e.getMessage()));
+        }
         super.onDestroy();
     }
 
@@ -256,6 +260,7 @@ public class UdpSocket extends CordovaPlugin {
     }
 
     private void _closeAllSockets() {
+        _log(String.format(Locale.ENGLISH, "close all sockets. numSockets=%d", _sockets.size()));
         for (int i = 0; i < _sockets.size(); i++) {
             int key = _sockets.keyAt(i);
             DatagramSocket socket = _sockets.get(key);
