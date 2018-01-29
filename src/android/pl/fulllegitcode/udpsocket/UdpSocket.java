@@ -77,6 +77,12 @@ public class UdpSocket extends CordovaPlugin {
         }
     }
 
+    @Override
+    public void onDestroy() {
+        _closeAllSockets();
+        super.onDestroy();
+    }
+
     private void _executeNext() {
         if (cordova.hasPermission(Manifest.permission.ACCESS_WIFI_STATE)
             && cordova.hasPermission(Manifest.permission.WAKE_LOCK)
@@ -221,7 +227,21 @@ public class UdpSocket extends CordovaPlugin {
     private void _closeSocket(int id) throws SocketException {
         if (_socketExists(id)) {
             DatagramSocket socket = _getSocket(id);
+            _closeSocket(socket);
+        }
+    }
+
+    private void _closeSocket(DatagramSocket socket) {
+        if (!socket.isClosed()) {
             socket.close();
+        }
+    }
+
+    private void _closeAllSockets() {
+        for (int i = 0; i < _sockets.size(); i++) {
+            int key = _sockets.keyAt(i);
+            DatagramSocket socket = _sockets.get(key);
+            _closeSocket(socket);
         }
     }
 
