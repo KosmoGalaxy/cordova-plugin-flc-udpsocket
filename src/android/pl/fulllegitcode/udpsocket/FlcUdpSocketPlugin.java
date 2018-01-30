@@ -150,7 +150,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     private void _lockWifi() {
         Context context = cordova.getActivity().getApplicationContext();
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        _wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL, "FlcUdpSocket");
+        _wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "FlcUdpSocket");
         _wifiLock.setReferenceCounted(true);
         _wifiLock.acquire();
         log(String.format("acquire WifiLock: %b", _wifiLock.isHeld()));
