@@ -100,7 +100,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
         for (int i = 0; i < permissions.length; i++) {
             String permission = permissions[i];
             int result = grantResults[i];
-            _log("permission " + permission + ": " + (result == PackageManager.PERMISSION_GRANTED ? "granted" : "denied"));
+            log("permission " + permission + ": " + (result == PackageManager.PERMISSION_GRANTED ? "granted" : "denied"));
             if (result == PackageManager.PERMISSION_DENIED) {
                 canExecute = false;
             }
