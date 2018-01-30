@@ -125,6 +125,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        _sockets.get(0).close();
         log("destroy");
         try {
             _closeAllSockets();
