@@ -130,12 +130,17 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
         _wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL, "UdpSocket");
         _wifiLock.setReferenceCounted(true);
         _wifiLock.acquire();
-        log(String.format("WifiLock: %b", _wifiLock.isHeld()));
+        log(String.format("acquire WifiLock: %b", _wifiLock.isHeld()));
     }
 
     private void _unlockWifi() {
         if (_wifiLock != null) {
-            _wifiLock.release();
+            if (_wifiLock.isHeld()) {
+                _wifiLock.release();
+                log(String.format(Locale.ENGLISH, "release WifiLock: %b", _wifiLock.isHeld()));
+            } else {
+                logError("WifiLock was not held");
+            }
         }
     }
 
@@ -145,12 +150,17 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
         _multicastLock = wifiManager.createMulticastLock("UdpSocket");
         _multicastLock.setReferenceCounted(true);
         _multicastLock.acquire();
-        log(String.format("MulticastLock: %b", _multicastLock.isHeld()));
+        log(String.format("acquire MulticastLock: %b", _multicastLock.isHeld()));
     }
 
     private void _unlockMulticast() {
         if (_multicastLock != null) {
-            _multicastLock.release();
+            if (_multicastLock.isHeld()) {
+                _multicastLock.release();
+                log(String.format(Locale.ENGLISH, "release MulticastLock: %b", _wifiLock.isHeld()));
+            } else {
+                logError("MulticastLock was not held");
+            }
         }
     }
 

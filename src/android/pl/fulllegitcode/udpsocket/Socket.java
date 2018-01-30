@@ -92,27 +92,27 @@ public class Socket extends DatagramSocket {
     private void _setBroadcast() {
         try {
             setBroadcast(true);
-            FlcUdpSocketPlugin.log(String.format("setBroadcast: %b", getBroadcast()));
+            FlcUdpSocketPlugin.log(String.format(Locale.ENGLISH, "setBroadcast. id=%d value=%b", id(), getBroadcast()));
         } catch (SocketException e) {
-            FlcUdpSocketPlugin.logError(String.format(Locale.ENGLISH, "setBroadcast error. message=%s", e.getMessage()));
+            FlcUdpSocketPlugin.logError(String.format(Locale.ENGLISH, "setBroadcast error. id=%d message=%s", id(), e.getMessage()));
         }
     }
 
     private void _setReuseAddress() {
         try {
             setReuseAddress(true);
-            FlcUdpSocketPlugin.log(String.format("setReuseAddress: %b", getReuseAddress()));
+            FlcUdpSocketPlugin.log(String.format(Locale.ENGLISH, "setReuseAddress. id=%d value=%b", id(), getReuseAddress()));
         } catch (SocketException e) {
-            FlcUdpSocketPlugin.logError(String.format(Locale.ENGLISH, "setReuseAddress error. message=%s", e.getMessage()));
+            FlcUdpSocketPlugin.logError(String.format(Locale.ENGLISH, "setReuseAddress error. id=%d message=%s", id(), e.getMessage()));
         }
     }
 
     private void _setTrafficClass() {
         try {
             setTrafficClass(0x10);
-            FlcUdpSocketPlugin.log(String.format(Locale.ENGLISH, "setTrafficClass: %d", getTrafficClass()));
+            FlcUdpSocketPlugin.log(String.format(Locale.ENGLISH, "setTrafficClass. id=%d value=%b", id(), getTrafficClass()));
         } catch (SocketException e) {
-            FlcUdpSocketPlugin.logError(String.format("setTrafficClass error. message=%s", e.getMessage()));
+            FlcUdpSocketPlugin.logError(String.format(Locale.ENGLISH, "setTrafficClass error. id=%d message=%s", id(), e.getMessage()));
         }
     }
 
