@@ -21,10 +21,11 @@
 
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="FlcUdpSocket" >
-                <param name="android-package" value="pl.fulllegitcode.udpsocket.UdpSocket"/>
+                <param name="android-package" value="pl.fulllegitcode.udpsocket.FlcUdpSocketPlugin"/>
             </feature>
         </config-file>
 
-        <source-file src="src/android/pl/fulllegitcode/udpsocket/UdpSocket.java" target-dir="src/pl/fulllegitcode/udpsocket" />
+        <source-file src="src/android/pl/fulllegitcode/udpsocket/FlcUdpSocketPlugin.java" target-dir="src/pl/fulllegitcode/udpsocket" />
+        <source-file src="src/android/pl/fulllegitcode/udpsocket/Socket.java" target-dir="src/pl/fulllegitcode/udpsocket" />
     </platform>
 </plugin>
