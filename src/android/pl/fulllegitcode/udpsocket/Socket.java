@@ -24,8 +24,8 @@ public class Socket extends DatagramSocket {
     public int id() { return _id; }
 
     public Socket(SocketAddress bindaddr, int id) throws SocketException {
-        super(bindaddr);
-        FlcUdpSocketPlugin.log(String.format(Locale.ENGLISH, "create. id=%d isBound=%b", id, isBound()));
+        super(3060);
+        FlcUdpSocketPlugin.log(String.format(Locale.ENGLISH, "create. id=%d isBound=%b port=%d", id, isBound(), getLocalPort()));
         _id = id;
         _setBroadcast();
         _setReuseAddress();
@@ -73,7 +73,7 @@ public class Socket extends DatagramSocket {
             return;
         }
         try {
-            bind(new InetSocketAddress(port));
+            //bind(new InetSocketAddress(port));
             FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "receive. id=%d isBound=%b port=%d", id(), isBound(), getLocalPort()));
             byte[] bytes = new byte[8 * 1024];
             DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
