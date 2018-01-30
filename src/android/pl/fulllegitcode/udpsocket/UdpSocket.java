@@ -86,8 +86,16 @@ public class UdpSocket extends CordovaPlugin {
     }
 
     @Override
+    public void onPause(boolean multitasking) {
+        super.onPause(multitasking);
+        _log("pause");
+        onDestroy();
+    }
+
+    @Override
     public void onDestroy() {
-        _log("destroy 1");
+        super.onDestroy();
+        _log("destroy 2");
         _log("" + _sockets.size());
         try {
             _closeAllSockets();
@@ -96,7 +104,6 @@ public class UdpSocket extends CordovaPlugin {
         } catch (Exception e) {
             _logError(String.format(Locale.ENGLISH, "destroy error. message=%s", e.getMessage()));
         }
-        super.onDestroy();
     }
 
     private void _executeNext() {
