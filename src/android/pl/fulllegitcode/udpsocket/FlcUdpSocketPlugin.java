@@ -217,7 +217,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
             @Override
             public void run() {
                 try {
-                    Socket socket = new Socket(id);
+                    Socket socket = new Socket(null, id);
                     _sockets.put(id, socket);
                     callbackContext.success();
                 } catch (SocketException e) {

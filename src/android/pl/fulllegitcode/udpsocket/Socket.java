@@ -1,12 +1,10 @@
 package pl.fulllegitcode.udpsocket;
 
-import org.apache.cordova.PluginResult;
-import org.json.JSONObject;
-
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.net.SocketException;
 import java.util.Locale;
 
@@ -25,8 +23,8 @@ public class Socket extends DatagramSocket {
     private int _id;
     public int id() { return _id; }
 
-    public Socket(int id) throws SocketException {
-        FlcUdpSocketPlugin.log(String.format(Locale.ENGLISH, "create. id=%d", id));
+    public Socket(SocketAddress bindaddr, int id) throws SocketException {
+        super(bindaddr);
         _id = id;
         _setBroadcast();
         _setReuseAddress();
