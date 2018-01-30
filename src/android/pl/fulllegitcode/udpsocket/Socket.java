@@ -29,7 +29,7 @@ public class Socket extends DatagramSocket {
         _id = id;
         _setBroadcast();
         _setReuseAddress();
-        _setSoTimeout();
+//        _setSoTimeout();
         _setTrafficClass();
     }
 
@@ -87,6 +87,7 @@ public class Socket extends DatagramSocket {
             }
         } catch (Exception e) {
             FlcUdpSocketPlugin.logError(String.format(Locale.ENGLISH, "receive error. id=%d port=%d message=%s", id(), port, e.getMessage()));
+            close();
             callback.error(e.getMessage());
         }
     }

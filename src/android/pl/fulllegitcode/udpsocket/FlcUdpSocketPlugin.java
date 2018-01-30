@@ -123,9 +123,20 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     }
 
     @Override
+    public void onPause(boolean multitasking) {
+        super.onPause(multitasking);
+        log(String.format(Locale.ENGLISH, "WifiLock: %b, MulticastLock: %b", _wifiLock.isHeld(), _multicastLock.isHeld()));
+    }
+
+    @Override
+    public void onReset() {
+        super.onReset();
+        log("reset");
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
-        _sockets.get(0).close();
         log("destroy");
         try {
             _closeAllSockets();
@@ -139,7 +150,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     private void _lockWifi() {
         Context context = cordova.getActivity().getApplicationContext();
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        _wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL, "UdpSocket");
+        _wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL, "FlcUdpSocket");
         _wifiLock.setReferenceCounted(true);
         _wifiLock.acquire();
         log(String.format("acquire WifiLock: %b", _wifiLock.isHeld()));
@@ -159,7 +170,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     private void _lockMulticast() {
         Context context = cordova.getActivity().getApplicationContext();
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        _multicastLock = wifiManager.createMulticastLock("UdpSocket");
+        _multicastLock = wifiManager.createMulticastLock("FlcUdpSocket");
         _multicastLock.setReferenceCounted(true);
         _multicastLock.acquire();
         log(String.format("acquire MulticastLock: %b", _multicastLock.isHeld()));
