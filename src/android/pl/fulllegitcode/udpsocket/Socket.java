@@ -25,6 +25,7 @@ public class Socket extends DatagramSocket {
 
     public Socket(SocketAddress bindaddr, int id) throws SocketException {
         super(bindaddr);
+        FlcUdpSocketPlugin.log(String.format(Locale.ENGLISH, "create. id=%d isBound=%b", id, isBound()));
         _id = id;
         _setBroadcast();
         _setReuseAddress();
@@ -108,7 +109,7 @@ public class Socket extends DatagramSocket {
     private void _setTrafficClass() {
         try {
             setTrafficClass(0x10);
-            FlcUdpSocketPlugin.log(String.format(Locale.ENGLISH, "setTrafficClass. id=%d value=%b", id(), getTrafficClass()));
+            FlcUdpSocketPlugin.log(String.format(Locale.ENGLISH, "setTrafficClass. id=%d value=%d", id(), getTrafficClass()));
         } catch (SocketException e) {
             FlcUdpSocketPlugin.logError(String.format(Locale.ENGLISH, "setTrafficClass error. id=%d message=%s", id(), e.getMessage()));
         }

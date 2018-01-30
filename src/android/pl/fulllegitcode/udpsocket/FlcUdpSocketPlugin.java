@@ -85,6 +85,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         if (action.equals("setDebug")) {
             _isDebug = args.getBoolean(0);
+            log(String.format(Locale.ENGLISH, "setDebug. value=%b", _isDebug));
             callbackContext.success();
             return true;
         }

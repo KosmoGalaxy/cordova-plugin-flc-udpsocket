@@ -21,6 +21,16 @@ function UdpSocket(successCallback, errorCallback) {
   );
 }
 
+UdpSocket.setDebug = function(value) {
+  exec(
+    function() {},
+    function(message) {},
+    'FlcUdpSocket',
+    'setDebug',
+    [value]
+  );
+};
+
 UdpSocket.prototype.send = function(ip, port, packet, successCallback, errorCallback) {
   if (this.isClosed) {
     return;
