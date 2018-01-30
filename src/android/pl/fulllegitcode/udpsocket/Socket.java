@@ -29,6 +29,7 @@ public class Socket extends DatagramSocket {
         _id = id;
         _setBroadcast();
         _setReuseAddress();
+        _setSoTimeout();
         _setTrafficClass();
     }
 
@@ -73,6 +74,7 @@ public class Socket extends DatagramSocket {
         }
         try {
             bind(new InetSocketAddress(port));
+            FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "receive. id=%d isBound=%b port=%d", id(), isBound(), getLocalPort()));
             byte[] bytes = new byte[8 * 1024];
             DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
             while (!isClosed()) {
@@ -80,7 +82,7 @@ public class Socket extends DatagramSocket {
                 String inPacketString = new String(packet.getData(), 0, packet.getLength());
                 String inIp = packet.getAddress().getHostAddress();
                 int inPort = packet.getPort();
-                FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "receive. id=%d address=%s:%d packet=%s", id(), inIp, inPort, inPacketString.substring(0, 100)));
+                FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "receive packet. id=%d address=%s:%d packet=%s", id(), inIp, inPort, inPacketString.substring(0, 100)));
                 callback.next(inIp, inPort, inPacketString);
             }
         } catch (Exception e) {
@@ -104,6 +106,15 @@ public class Socket extends DatagramSocket {
             FlcUdpSocketPlugin.log(String.format(Locale.ENGLISH, "setReuseAddress. id=%d value=%b", id(), getReuseAddress()));
         } catch (SocketException e) {
             FlcUdpSocketPlugin.logError(String.format(Locale.ENGLISH, "setReuseAddress error. id=%d message=%s", id(), e.getMessage()));
+        }
+    }
+
+    private void _setSoTimeout() {
+        try {
+            setSoTimeout(5000);
+            FlcUdpSocketPlugin.log(String.format(Locale.ENGLISH, "setSoTimeout. id=%d value=%d", id(), getSoTimeout()));
+        } catch (SocketException e) {
+            FlcUdpSocketPlugin.logError(String.format(Locale.ENGLISH, "setSoTimeout error. id=%d message=%s", id(), e.getMessage()));
         }
     }
 

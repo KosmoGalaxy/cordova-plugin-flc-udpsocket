@@ -116,6 +116,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        log("destroy");
         try {
             _closeAllSockets();
             _unlockWifi();
