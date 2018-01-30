@@ -77,6 +77,8 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
         super.initialize(cordova, webView);
         log("initialize");
         _instance = this;
+        _lockWifi();
+        _lockMulticast();
     }
 
     @Override
@@ -161,12 +163,6 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
                 _executions.remove(0);
                 _execute(execution);
                 _executeNext();
-            }
-            if (_wifiLock == null) {
-                _lockWifi();
-            }
-            if (_multicastLock == null) {
-                _lockMulticast();
             }
         } else if (!_werePermissionsRequested) {
             log("requesting permissions");

@@ -26,6 +26,7 @@ public class Socket extends DatagramSocket {
     public int id() { return _id; }
 
     public Socket(int id) throws SocketException {
+        FlcUdpSocketPlugin.log(String.format(Locale.ENGLISH, "create. id=%d", id));
         _id = id;
         _setBroadcast();
         _setReuseAddress();
