@@ -82,11 +82,20 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     }
 
     @Override
-    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+    public boolean execute(String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
         if (action.equals("setDebug")) {
-            _isDebug = args.getBoolean(0);
-            log(String.format(Locale.ENGLISH, "setDebug. value=%b", _isDebug));
-            callbackContext.success();
+            cordova.getThreadPool().execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        _isDebug = args.getBoolean(0);
+                        log(String.format(Locale.ENGLISH, "setDebug. value=%b", _isDebug));
+                        callbackContext.success();
+                    } catch (JSONException e) {
+                        callbackContext.error(e.getMessage());
+                    }
+                }
+            });
             return true;
         }
         if (action.equals("create") || action.equals("send") || action.equals("broadcast") || action.equals("receive") || action.equals("close")) {
