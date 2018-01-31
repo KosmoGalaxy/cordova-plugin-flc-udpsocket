@@ -84,6 +84,9 @@ public class Socket extends DatagramSocket {
                 String inPacketString = new String(packet.getData(), 0, packet.getLength());
                 String inIp = packet.getAddress().getHostAddress();
                 int inPort = packet.getPort();
+                if (!FlcUdpSocketPlugin.receiveFromOwnIp() && inIp.equals(FlcUdpSocketPlugin.getOwnIp())) {
+                    continue;
+                }
                 FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "receive. id=%d address=%s:%d packet=%s", id(), inIp, inPort, inPacketString.substring(0, 100)));
                 callback.next(inIp, inPort, inPacketString);
             }

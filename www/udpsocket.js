@@ -9,9 +9,19 @@ function UdpSocket() {
 UdpSocket.setDebug = function(value) {
   exec(
     function() {},
-    function(message) {},
+    function() {},
     'FlcUdpSocket',
     'setDebug',
+    [value]
+  );
+};
+
+UdpSocket.receiveFromOwnIp = function(value) {
+  exec(
+    function() {},
+    function() {},
+    'FlcUdpSocket',
+    'receiveFromOwnIp',
     [value]
   );
 };

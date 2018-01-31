@@ -46,6 +46,13 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     private static FlcUdpSocketPlugin _instance;
     private static boolean _isDebug = false;
 
+    private static boolean _receiveFromOwnIp = true;
+    public static boolean receiveFromOwnIp() { return _receiveFromOwnIp; }
+
+    public static String getOwnIp() {
+        return _instance._getOwnIp();
+    }
+
     public static InetAddress getBroadcastAddress() throws UnknownHostException {
         return _instance._getBroadcastAddress();
     }
@@ -96,6 +103,21 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
                     try {
                         _isDebug = args.getBoolean(0);
                         log(String.format(Locale.ENGLISH, "setDebug. value=%b", _isDebug));
+                        callbackContext.success();
+                    } catch (JSONException e) {
+                        callbackContext.error(e.getMessage());
+                    }
+                }
+            });
+            return true;
+        }
+        if (action.equals("receiveFromOwnIp")) {
+            cordova.getThreadPool().execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        _receiveFromOwnIp = args.getBoolean(0);
+                        log(String.format(Locale.ENGLISH, "receiveFromOwnIp. value=%b", _receiveFromOwnIp));
                         callbackContext.success();
                     } catch (JSONException e) {
                         callbackContext.error(e.getMessage());
@@ -372,6 +394,13 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
             Socket socket = _sockets.get(key);
             _closeSocket(socket);
         }
+    }
+
+    private String _getOwnIp() {
+        Context context = cordova.getActivity().getApplicationContext();
+        WifiManager wifiManager = (WifiManager)context.getSystemService(WIFI_SERVICE);
+        int ip = wifiManager.getConnectionInfo().getIpAddress();
+        return String.format(Locale.ENGLISH, "%d.%d.%d.%d", (ip & 0xff),(ip >> 8 & 0xff),(ip >> 16 & 0xff),(ip >> 24 & 0xff));
     }
 
     private InetAddress _getBroadcastAddress() throws UnknownHostException {
