@@ -68,6 +68,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
 
     private ArrayList<Execution> _executions = new ArrayList<Execution>();
     private SparseArray<Socket> _sockets = new SparseArray<Socket>();
+    private boolean _arePermissionsGranted = false;
     private boolean _werePermissionsRequested = false;
     private WifiManager.WifiLock _wifiLock = null;
     private WifiManager.MulticastLock _multicastLock = null;
@@ -79,6 +80,11 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
         _instance = this;
         _lockWifi();
         _lockMulticast();
+        if (cordova.hasPermission(Manifest.permission.ACCESS_WIFI_STATE)
+            && cordova.hasPermission(Manifest.permission.WAKE_LOCK)
+            && cordova.hasPermission(Manifest.permission.CHANGE_WIFI_MULTICAST_STATE)) {
+            _arePermissionsGranted = true;
+        }
     }
 
     @Override
@@ -108,35 +114,34 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
 
     @Override
     public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) throws JSONException {
-        boolean canExecute = true;
+        boolean isAllGranted = true;
         for (int i = 0; i < permissions.length; i++) {
             String permission = permissions[i];
             int result = grantResults[i];
             log("permission " + permission + ": " + (result == PackageManager.PERMISSION_GRANTED ? "granted" : "denied"));
             if (result == PackageManager.PERMISSION_DENIED) {
-                canExecute = false;
+                isAllGranted = false;
             }
         }
-        if (canExecute) {
+        if (isAllGranted) {
+            _arePermissionsGranted = true;
             _executeNext();
         }
     }
 
     @Override
-    public void onPause(boolean multitasking) {
-        super.onPause(multitasking);
-        log(String.format(Locale.ENGLISH, "WifiLock: %b, MulticastLock: %b", _wifiLock.isHeld(), _multicastLock.isHeld()));
-    }
-
-    @Override
     public void onReset() {
-        super.onReset();
         log("reset");
+        try {
+            _closeAllSockets();
+        } catch (Exception e) {
+            logError(String.format(Locale.ENGLISH, "reset error. message=%s", e.getMessage()));
+        }
+        super.onReset();
     }
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         log("destroy");
         try {
             _closeAllSockets();
@@ -145,6 +150,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
         } catch (Exception e) {
             logError(String.format(Locale.ENGLISH, "destroy error. message=%s", e.getMessage()));
         }
+        super.onDestroy();
     }
 
     private void _lockWifi() {
@@ -157,13 +163,8 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     }
 
     private void _unlockWifi() {
-        if (_wifiLock != null) {
-            if (_wifiLock.isHeld()) {
-                _wifiLock.release();
-                log(String.format(Locale.ENGLISH, "release WifiLock: %b", _wifiLock.isHeld()));
-            } else {
-                logError("WifiLock was not held");
-            }
+        if (_wifiLock != null && _wifiLock.isHeld()) {
+            _wifiLock.release();
         }
     }
 
@@ -177,20 +178,13 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     }
 
     private void _unlockMulticast() {
-        if (_multicastLock != null) {
-            if (_multicastLock.isHeld()) {
-                _multicastLock.release();
-                log(String.format(Locale.ENGLISH, "release MulticastLock: %b", _wifiLock.isHeld()));
-            } else {
-                logError("MulticastLock was not held");
-            }
+        if (_multicastLock != null && _multicastLock.isHeld()) {
+            _multicastLock.release();
         }
     }
 
     private void _executeNext() {
-        if (cordova.hasPermission(Manifest.permission.ACCESS_WIFI_STATE)
-            && cordova.hasPermission(Manifest.permission.WAKE_LOCK)
-            && cordova.hasPermission(Manifest.permission.CHANGE_WIFI_MULTICAST_STATE)) {
+        if (_arePermissionsGranted) {
             if (!_executions.isEmpty()) {
                 Execution execution = _executions.get(0);
                 _executions.remove(0);

@@ -1,24 +1,9 @@
 const exec = require('cordova/exec');
 var nextId = 1;
 
-function UdpSocket(successCallback, errorCallback) {
+function UdpSocket() {
   this.id = nextId++;
   this.isClosed = false;
-  exec(
-    function() {
-      if (successCallback) {
-        successCallback(this);
-      }
-    },
-    function(message) {
-      if (errorCallback) {
-        errorCallback(this, message);
-      }
-    },
-    'FlcUdpSocket',
-    'create',
-    [this.id]
-  );
 }
 
 UdpSocket.setDebug = function(value) {
@@ -28,6 +13,25 @@ UdpSocket.setDebug = function(value) {
     'FlcUdpSocket',
     'setDebug',
     [value]
+  );
+};
+
+UdpSocket.create = function(successCallback, errorCallback) {
+  const socket = new UdpSocket();
+  exec(
+    function() {
+      if (successCallback) {
+        successCallback(socket);
+      }
+    },
+    function(message) {
+      if (errorCallback) {
+        errorCallback(socket, message);
+      }
+    },
+    'FlcUdpSocket',
+    'create',
+    [socket.id]
   );
 };
 

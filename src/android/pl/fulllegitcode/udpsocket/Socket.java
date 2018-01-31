@@ -13,7 +13,6 @@ public class Socket extends DatagramSocket {
     public interface ReceiveCallback {
 
         void next(String ip, int port, String packet);
-
         void error(String message);
 
     }
@@ -25,11 +24,10 @@ public class Socket extends DatagramSocket {
 
     public Socket(SocketAddress bindaddr, int id) throws SocketException {
         super(bindaddr);
-        FlcUdpSocketPlugin.log(String.format(Locale.ENGLISH, "create. id=%d isBound=%b port=%d", id, isBound(), getLocalPort()));
+        FlcUdpSocketPlugin.log(String.format(Locale.ENGLISH, "create. id=%d", id));
         _id = id;
         _setBroadcast();
         _setReuseAddress();
-//        _setSoTimeout();
         _setTrafficClass();
     }
 
@@ -73,8 +71,12 @@ public class Socket extends DatagramSocket {
             return;
         }
         try {
-            bind(new InetSocketAddress(port));
-            FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "receive. id=%d isBound=%b port=%d", id(), isBound(), getLocalPort()));
+            if (!isBound()) {
+                bind(new InetSocketAddress(port));
+            } else {
+                FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "already bound. id=%d port=%d", id(), getLocalPort()));
+            }
+            FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "receive start. id=%d port=%d", id(), getLocalPort()));
             byte[] bytes = new byte[8 * 1024];
             DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
             while (!isClosed()) {
@@ -82,12 +84,11 @@ public class Socket extends DatagramSocket {
                 String inPacketString = new String(packet.getData(), 0, packet.getLength());
                 String inIp = packet.getAddress().getHostAddress();
                 int inPort = packet.getPort();
-                FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "receive packet. id=%d address=%s:%d packet=%s", id(), inIp, inPort, inPacketString.substring(0, 100)));
+                FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "receive. id=%d address=%s:%d packet=%s", id(), inIp, inPort, inPacketString.substring(0, 100)));
                 callback.next(inIp, inPort, inPacketString);
             }
         } catch (Exception e) {
             FlcUdpSocketPlugin.logError(String.format(Locale.ENGLISH, "receive error. id=%d port=%d message=%s", id(), port, e.getMessage()));
-            close();
             callback.error(e.getMessage());
         }
     }
@@ -107,15 +108,6 @@ public class Socket extends DatagramSocket {
             FlcUdpSocketPlugin.log(String.format(Locale.ENGLISH, "setReuseAddress. id=%d value=%b", id(), getReuseAddress()));
         } catch (SocketException e) {
             FlcUdpSocketPlugin.logError(String.format(Locale.ENGLISH, "setReuseAddress error. id=%d message=%s", id(), e.getMessage()));
-        }
-    }
-
-    private void _setSoTimeout() {
-        try {
-            setSoTimeout(5000);
-            FlcUdpSocketPlugin.log(String.format(Locale.ENGLISH, "setSoTimeout. id=%d value=%d", id(), getSoTimeout()));
-        } catch (SocketException e) {
-            FlcUdpSocketPlugin.logError(String.format(Locale.ENGLISH, "setSoTimeout error. id=%d message=%s", id(), e.getMessage()));
         }
     }
 
