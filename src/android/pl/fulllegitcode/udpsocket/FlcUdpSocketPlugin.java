@@ -74,7 +74,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
 
 
     private ArrayList<Execution> _executions = new ArrayList<Execution>();
-    private SparseArray<Socket> _sockets = new SparseArray<Socket>();
+    private ArrayList<Socket> _sockets = new ArrayList<Socket>();
     private boolean _arePermissionsGranted = false;
     private boolean _werePermissionsRequested = false;
     private WifiManager.WifiLock _wifiLock = null;
@@ -257,7 +257,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
             public void run() {
                 try {
                     Socket socket = new Socket(null, id);
-                    _sockets.put(id, socket);
+                    _sockets.add(socket);
                     callbackContext.success();
                 } catch (SocketException e) {
                     logError(String.format(Locale.ENGLISH, "create error. id=%d message=%s", id, e.getMessage()));
@@ -359,13 +359,14 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     }
 
     private Socket _getSocket(int id) {
-        log(String.format(Locale.ENGLISH, "sockets. numSockets=%d", _sockets.size()));
+        logDebug(String.format(Locale.ENGLISH, "sockets. numSockets=%d", _sockets.size()));
         for (int i = 0; i < _sockets.size(); i++) {
-            int key = _sockets.keyAt(i);
-            Socket socket = _sockets.get(key);
-            log(String.format(Locale.ENGLISH, "socket. id=%d key=%d", socket.id(), key));
+            Socket socket = _sockets.get(i);
+            if (socket.id() == id) {
+                return socket;
+            }
         }
-        return _sockets.get(id);
+        return null;
     }
 
     private String _closeSocket(int id) {
@@ -380,15 +381,13 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     }
 
     private String _closeSocket(Socket socket) {
-        int index = _sockets.indexOfValue(socket);
-        int id = _sockets.keyAt(index);
         if (!socket.isClosed()) {
-            log(String.format(Locale.ENGLISH, "close. id=%d", id));
+            log(String.format(Locale.ENGLISH, "close. id=%d", socket.id()));
             socket.close();
             return null;
         } else {
             String reason = "socket already closed";
-            logError(String.format(Locale.ENGLISH, "close failed. id=%d reason=%s", id, reason));
+            logError(String.format(Locale.ENGLISH, "close failed. id=%d reason=%s", socket.id(), reason));
             return reason;
         }
     }
@@ -396,9 +395,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     private void _closeAllSockets() {
         log(String.format(Locale.ENGLISH, "close all sockets. numSockets=%d", _sockets.size()));
         for (int i = 0; i < _sockets.size(); i++) {
-            int key = _sockets.keyAt(i);
-            Socket socket = _sockets.get(key);
-            _closeSocket(socket);
+            _closeSocket(_sockets.get(i));
         }
     }
 
