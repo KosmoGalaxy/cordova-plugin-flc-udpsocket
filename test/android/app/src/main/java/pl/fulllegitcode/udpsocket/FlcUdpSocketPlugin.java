@@ -362,7 +362,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
   }
 
   private Socket _getSocket(int id) {
-    logDebug(String.format(Locale.ENGLISH, "sockets. numSockets=%d", _sockets.size()));
+    /*logDebug(String.format(Locale.ENGLISH, "sockets. numSockets=%d", _sockets.size()));*/
     for (int i = 0; i < _sockets.size(); i++) {
       Socket socket = _sockets.get(i);
       if (socket.id() == id) {
