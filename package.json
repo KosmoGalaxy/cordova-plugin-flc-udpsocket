@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-flc-udpsocket",
-  "version": "1.1.0",
+  "version": "1.2.1",
   "description": "Cordova FullLegitCode UDP Socket Plugin",
   "cordova": {
     "id": "cordova-plugin-flc-udpsocket",
