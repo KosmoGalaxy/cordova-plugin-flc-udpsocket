@@ -92,7 +92,7 @@ public class Socket extends DatagramSocket {
         if (!FlcUdpSocketPlugin.receiveFromOwnIp() && inIp.equals(myIp)) {
           continue;
         }
-        FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "receive. id=%d address=%s:%d packet=%s myIp=%s", id(), inIp, inPort, inPacketString.substring(0, 100), myIp));
+        FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "receive. id=%d myIp=%s address=%s:%d packet=%s", id(), myIp, inIp, inPort, inPacketString.substring(0, 100)));
         callback.next(inIp, inPort, inPacketString);
       }
     } catch (Exception e) {
