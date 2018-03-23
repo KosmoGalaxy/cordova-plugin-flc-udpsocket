@@ -84,7 +84,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
   @Override
   public void initialize(CordovaInterface cordova, CordovaWebView webView) {
     super.initialize(cordova, webView);
-    log("initialize");
+    log("initialize 1");
     _instance = this;
     _lockWifi();
     _lockMulticast();
@@ -322,6 +322,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
       @Override
       public void run() {
         Process.setThreadPriority(Thread.MAX_PRIORITY);
+        Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
         logDebug(String.format(Locale.ENGLISH, "receive thread priority: %d", Thread.currentThread().getPriority()));
         socket.receive(port, new Socket.ReceiveCallback() {
           @Override

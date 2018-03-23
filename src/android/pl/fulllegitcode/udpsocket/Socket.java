@@ -112,6 +112,7 @@ public class Socket extends DatagramSocket {
 
   private void _setReceiveBufferSize() {
     try {
+      setReceiveBufferSize(getReceiveBufferSize() * 2);
       FlcUdpSocketPlugin.log(String.format(Locale.ENGLISH, "setReceiveBufferSize. id=%d value=%d", id(), getReceiveBufferSize()));
     } catch (SocketException e) {
       FlcUdpSocketPlugin.logError(String.format(Locale.ENGLISH, "setReceiveBufferSize error. id=%d message=%s", id(), e.getMessage()));
