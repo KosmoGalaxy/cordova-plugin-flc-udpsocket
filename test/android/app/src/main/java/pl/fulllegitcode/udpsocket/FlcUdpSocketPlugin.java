@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
-import android.os.Process;
 import android.util.Log;
 
 import org.apache.cordova.CallbackContext;
@@ -84,7 +83,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
   @Override
   public void initialize(CordovaInterface cordova, CordovaWebView webView) {
     super.initialize(cordova, webView);
-    log("initialize 1");
+    log("initialize");
     _instance = this;
     _lockWifi();
     _lockMulticast();
@@ -321,7 +320,6 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     cordova.getThreadPool().execute(new Runnable() {
       @Override
       public void run() {
-        Process.setThreadPriority(Thread.MAX_PRIORITY);
         Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
         logDebug(String.format(Locale.ENGLISH, "receive thread priority: %d", Thread.currentThread().getPriority()));
         socket.receive(port, new Socket.ReceiveCallback() {
