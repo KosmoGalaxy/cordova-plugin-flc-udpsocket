@@ -405,7 +405,9 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     Context context = cordova.getActivity().getApplicationContext();
     WifiManager wifiManager = (WifiManager) context.getSystemService(WIFI_SERVICE);
     int ip = wifiManager.getConnectionInfo().getIpAddress();
-    return String.format(Locale.ENGLISH, "%d.%d.%d.%d", (ip & 0xff), (ip >> 8 & 0xff), (ip >> 16 & 0xff), (ip >> 24 & 0xff));
+    return ip != 0
+      ? String.format(Locale.ENGLISH, "%d.%d.%d.%d", (ip & 0xff), (ip >> 8 & 0xff), (ip >> 16 & 0xff), (ip >> 24 & 0xff))
+      : "192.168.43.1";
   }
 
   private InetAddress _getBroadcastAddress() throws UnknownHostException {
