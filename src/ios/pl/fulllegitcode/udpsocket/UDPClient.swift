@@ -4,19 +4,21 @@ import Foundation
 
 open class UDPClient: Socket {
   
-  public override init(address: String, port: Int32) {
-    super.init(address: address, port: port)
+  var isBound = false
+  
+  public override init() {
+    super.init()
     
-    let fd = flc_udpsocket_create(address, port)
+    let fd = flc_udpsocket_create()
     if fd > 0 {
       self.fd = fd
     }
   }
   
-  open func send(ip: String, packet: String) -> Result {
+  open func send(toIp: String, toPort: Int32, packet: String) -> Result {
     guard let fd = self.fd else { return .failure(SocketError.connectionClosed) }
     
-    let sendsize = flc_udpsocket_sendto(fd, packet, Int32(strlen(packet)), ip, port)
+    let sendsize = flc_udpsocket_sendto(fd, packet, Int32(strlen(packet)), toIp, toPort)
     if sendsize == Int32(strlen(packet)) {
       return .success
     } else {
@@ -24,11 +26,24 @@ open class UDPClient: Socket {
     }
   }
   
-  open func broadcast(packet: String) -> Result {
+  open func broadcast(toPort: Int32, packet: String) -> Result {
     guard let fd = self.fd else { return .failure(SocketError.connectionClosed) }
     
-    let sendsize = flc_udpsocket_broadcast(fd, packet, Int32(strlen(packet)), address, port)
+    let sendsize = flc_udpsocket_broadcast(fd, packet, Int32(strlen(packet)), address, toPort)
     if sendsize == Int32(strlen(packet)) {
+      return .success
+    } else {
+      return .failure(SocketError.unknownError)
+    }
+  }
+  
+  open func bind(port: Int32) -> Result {
+    if isBound {
+      return .failure(SocketError.alreadyBound)
+    }
+    guard let fd = self.fd else { return .failure(SocketError.connectionClosed) }
+    if flc_udpsocket_bind(fd, port) == 0 {
+      isBound = true
       return .success
     } else {
       return .failure(SocketError.unknownError)

@@ -50,7 +50,7 @@ body {
     background:url(../img/logo.png) no-repeat center top; /* 170px x 200px */
     position:absolute;             /* position in the center of the screen */
     left:50%;
-    top:50%;
+    top:20%;
     height:50px;                   /* text area height */
     width:225px;                   /* text area width */
     text-align:center;
@@ -112,4 +112,33 @@ h1 {
 .blink {
     animation:fade 3000ms infinite;
     -webkit-animation:fade 3000ms infinite;
+}
+
+#test {
+  display:none;
+  margin-top: 100px;
+}
+
+#test > div {
+  margin: 12px 0;
+}
+
+input {
+  height: 24px;
+  font-size: 16px;
+}
+
+textarea {
+  width: 250px;
+  height: 600px;
+  font-size:10px;
+}
+
+button {
+  height: 64px;
+  padding: 12px;
+  background: tomato;
+  border: 1px dotted pink;
+  color: white;
+  font-size: 28px;
 }

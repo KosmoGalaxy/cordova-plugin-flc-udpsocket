@@ -18,61 +18,59 @@
 
 #import "flcudpsocket.h"
 
-int flc_udpsocket_create(const char *address, int port) {
+int flc_udpsocket_create() {
   int socketfd = socket(AF_INET, SOCK_DGRAM, 0);
   int r = -1, s = -1;
-  
-  struct sockaddr_in serv_addr;
-  memset( &serv_addr, '\0', sizeof(serv_addr));
-  serv_addr.sin_len = sizeof(struct sockaddr_in);
-  serv_addr.sin_family = AF_INET;
   
   int broadcaston = 1;
   int reuseon = 1;
   r = setsockopt(socketfd, SOL_SOCKET, SO_BROADCAST, &broadcaston, sizeof(broadcaston));
   s = setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &reuseon, sizeof(reuseon));
-  serv_addr.sin_port = htons(port);
-  serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
   
-  if (r == -1 || s == -1) {
-    return -1;
-  }
-  
-  r = bind(socketfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
-  if (r == 0) {
+  if (r == 0 & s == 0) {
     return socketfd;
   } else {
     return -1;
   }
 }
 
-int flc_udpsocket_receive(int socket_fd, char *outdata, int expted_len, char *remoteip, int *remoteport) {
+int flc_udpsocket_bind(int socketfd, int port) {
+  struct sockaddr_in serv_addr;
+  memset( &serv_addr, '\0', sizeof(serv_addr));
+  serv_addr.sin_len = sizeof(struct sockaddr_in);
+  serv_addr.sin_family = AF_INET;
+  serv_addr.sin_port = htons(port);
+  serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  return bind(socketfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+}
+
+int flc_udpsocket_receive(int socketfd, char *outdata, int expted_len, char *remoteip, int *remoteport) {
   struct sockaddr_in cli_addr;
   socklen_t clilen = sizeof(cli_addr);
   memset(&cli_addr, 0x0, sizeof(struct sockaddr_in));
-  int len = (int)recvfrom(socket_fd, outdata, expted_len, 0, (struct sockaddr *)&cli_addr, &clilen);
+  int len = (int)recvfrom(socketfd, outdata, expted_len, 0, (struct sockaddr *)&cli_addr, &clilen);
   char *clientip = inet_ntoa(cli_addr.sin_addr);
   memcpy(remoteip, clientip, strlen(clientip));
   *remoteport = cli_addr.sin_port;
   return len;
 }
 
-int flc_udpsocket_close(int socket_fd) {
-  return close(socket_fd);
+int flc_udpsocket_close(int socketfd) {
+  return close(socketfd);
 }
 
-int flc_udpsocket_sendto(int socket_fd, const char *msg, int len, const char *toaddr, int toport) {
+int flc_udpsocket_sendto(int socketfd, const char *msg, int len, const char *toaddr, int toport) {
   struct sockaddr_in address;
   memset(&address, 0x0, sizeof(struct sockaddr_in));
   address.sin_family = AF_INET;
   address.sin_port = htons(toport);
   address.sin_addr.s_addr = inet_addr(toaddr);
-  int sendlen = (int)sendto(socket_fd, msg, len, 0, (struct sockaddr *)&address, sizeof(address));
+  int sendlen = (int)sendto(socketfd, msg, len, 0, (struct sockaddr *)&address, sizeof(address));
   
   return sendlen;
 }
 
-int flc_udpsocket_broadcast(int socket_fd, const char *msg, int len, const char *address, int toport) {
+int flc_udpsocket_broadcast(int socketfd, const char *msg, int len, const char *address, int toport) {
   char broadcast_address[NI_MAXHOST];
   int r = flc_udpsocket_get_broadcast_address(broadcast_address);
   if (r == -1) {
@@ -84,7 +82,7 @@ int flc_udpsocket_broadcast(int socket_fd, const char *msg, int len, const char 
   send_address.sin_family = AF_INET;
   send_address.sin_port = htons(toport);
   inet_pton(AF_INET, broadcast_address, &send_address.sin_addr);
-  int sendlen = (int)sendto(socket_fd, msg, len, 0, (struct sockaddr *)&send_address, sizeof(send_address));
+  int sendlen = (int)sendto(socketfd, msg, len, 0, (struct sockaddr *)&send_address, sizeof(send_address));
   
   return sendlen;
 }

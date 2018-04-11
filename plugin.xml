@@ -44,5 +44,6 @@
       <source-file src="src/ios/pl/fulllegitcode/udpsocket/UDPClient.swift" />
       <source-file src="src/ios/pl/fulllegitcode/udpsocket/Socket.swift" />
       <source-file src="src/ios/pl/fulllegitcode/udpsocket/Result.swift" />
+      <source-file src="src/ios/pl/fulllegitcode/udpsocket/FlcUdpSocketPlugin.swift" />
     </platform>
 </plugin>

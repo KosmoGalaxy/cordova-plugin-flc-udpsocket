@@ -11,6 +11,8 @@ import Foundation
 enum FlcUdpSocketError: Error {
   case socketClosed
   case sendFailed
+  case bindFailed
+  case alreadyBound
 }
 
 class FlcUdpSocket {
@@ -18,22 +20,22 @@ class FlcUdpSocket {
   var closed: Bool = true
   var client: UDPClient?
   var serverIp: String?
+  public var receiveFromOwnIp = true
   
   init() {
     serverIp = FlcUdpSocket.getMyIp()!
   }
   
-  func create(port: Int32) {
-    client = UDPClient(address: serverIp!, port: port)
+  func create() {
+    client = UDPClient()
     closed = false
-    print("Socket created server IP =", serverIp!, "PORT =", port)
   }
   
-  func send(to: String, message: String) throws {
+  func send(toIp: String, toPort: Int32, packet: String) throws {
     if closed {
       throw FlcUdpSocketError.socketClosed
     }
-    switch client!.send(ip: to, packet: message) {
+    switch client!.send(toIp: toIp, toPort: toPort, packet: packet) {
     case .success:
       break
     case .failure(let error):
@@ -42,11 +44,11 @@ class FlcUdpSocket {
     }
   }
   
-  func broadcast(message: String) throws {
+  func broadcast(toPort: Int32, packet: String) throws {
     if closed {
       throw FlcUdpSocketError.socketClosed
     }
-    switch client!.broadcast(packet: message) {
+    switch client!.broadcast(toPort: toPort, packet: packet) {
     case .success:
       break
     case .failure(let error):
@@ -55,23 +57,37 @@ class FlcUdpSocket {
     }
   }
  
-  func receive(callback: (_ ip: String, _ port: Int,  _ packet: String) -> ()) throws {
+  func receive(port: Int32, callback: (_ ip: String, _ port: Int,  _ packet: String) -> ()) throws {
     if closed {
       throw FlcUdpSocketError.socketClosed
     }
+    
+    if client!.isBound {
+      throw FlcUdpSocketError.alreadyBound
+    }
+    
+    client!.bind(port: port)
     
     while !closed {
       let (data, address, port) = client!.recv(1024)
       if data != nil {
         let dataString: String = String(data: Data(data!), encoding: .utf8)!
-        if address != serverIp! {
+        if receiveFromOwnIp {
           callback(address, port, dataString)
+        } else {
+          if address != serverIp! {
+            callback(address, port, dataString)
+          }
         }
       }
     }
   }
   
   func close() throws {
+    if closed {
+      throw FlcUdpSocketError.socketClosed
+    }
+    
     client?.close()
   }
   
