@@ -51,7 +51,7 @@ int flc_udpsocket_receive(int socketfd, char *outdata, int expted_len, char *rem
   int len = (int)recvfrom(socketfd, outdata, expted_len, 0, (struct sockaddr *)&cli_addr, &clilen);
   char *clientip = inet_ntoa(cli_addr.sin_addr);
   memcpy(remoteip, clientip, strlen(clientip));
-  *remoteport = cli_addr.sin_port;
+  *remoteport = ntohs(cli_addr.sin_port);
   return len;
 }
 
