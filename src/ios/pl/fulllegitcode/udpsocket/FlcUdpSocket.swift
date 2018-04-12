@@ -15,6 +15,8 @@ enum FlcUdpSocketError: Error {
   case alreadyBound
 }
 
+let BUFFER_SIZE: Int = 16 * 1024;
+
 class FlcUdpSocket {
   
   var closed: Bool = true
@@ -69,7 +71,7 @@ class FlcUdpSocket {
     client!.bind(port: port)
     
     while !closed {
-      let (data, address, port) = client!.recv(1024)
+      let (data, address, port) = client!.recv(BUFFER_SIZE)
       if data != nil {
         let dataString: String = String(data: Data(data!), encoding: .utf8)!
         if receiveFromOwnIp {
