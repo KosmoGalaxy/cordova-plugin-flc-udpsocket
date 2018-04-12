@@ -62,7 +62,7 @@ UdpSocket.prototype.send = function(ip, port, packet, successCallback, errorCall
     },
     'FlcUdpSocket',
     'send',
-    [this.id, ip, port, packet]
+    [this.id, ip, parseInt(port), packet]
   );
 };
 
@@ -83,7 +83,7 @@ UdpSocket.prototype.broadcast = function(port, packet, successCallback, errorCal
     },
     'FlcUdpSocket',
     'broadcast',
-    [this.id, port, packet]
+    [this.id, parseInt(port), packet]
   );
 };
 
@@ -104,7 +104,7 @@ UdpSocket.prototype.receive = function(port, nextCallback, errorCallback) {
     },
     'FlcUdpSocket',
     'receive',
-    [this.id, port]
+    [this.id, parseInt(port)]
   );
 };
 
