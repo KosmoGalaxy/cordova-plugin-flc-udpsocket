@@ -68,7 +68,7 @@ class FlcUdpSocket {
       throw FlcUdpSocketError.alreadyBound
     }
     
-    client!.bind(port: port)
+    _ = client!.bind(port: port)
     
     while !closed {
       let (data, address, port) = client!.recv(BUFFER_SIZE)
