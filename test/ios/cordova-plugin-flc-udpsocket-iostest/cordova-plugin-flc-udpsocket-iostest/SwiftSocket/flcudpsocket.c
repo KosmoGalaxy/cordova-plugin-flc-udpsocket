@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <net/if.h>
 #include <sys/types.h>
 #include <string.h>
 #include <unistd.h>
@@ -132,11 +133,17 @@ int flc_udpsocket_get_ifaddrs(struct ifaddrs *address) {
   }
   
   for (ifa = ifaddr, n = 0; ifa != NULL; ifa = ifa->ifa_next, n++) {
-    if (ifa->ifa_addr == NULL)
-      continue;
+    if (ifa->ifa_addr == NULL) continue;
+    if (ifa->ifa_flags & IFF_LOOPBACK) continue;
+    if (!(ifa->ifa_flags & IFF_BROADCAST) || ifa->ifa_dstaddr == NULL) continue;
     
     family = ifa->ifa_addr->sa_family;
     if (family != AF_INET) continue;
+    
+    if (strcmp(ifa->ifa_name, "bridge100") == 0) {
+      memcpy(address, ifa, sizeof(struct ifaddrs));
+      break;
+    }
     
     if (strcmp(ifa->ifa_name, "en0") == 0) {
       memcpy(address, ifa, sizeof(struct ifaddrs));

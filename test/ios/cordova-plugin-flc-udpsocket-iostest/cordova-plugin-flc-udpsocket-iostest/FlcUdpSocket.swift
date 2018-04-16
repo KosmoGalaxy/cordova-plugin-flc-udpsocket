@@ -61,7 +61,7 @@ class FlcUdpSocket {
     }
     
     while !closed {
-      let (data, address, port) = client!.recv(1024)
+      let (data, address, port) = client!.recv(16 * 1024)
       if data != nil {
         let dataString: String = String(data: Data(data!), encoding: .utf8)!
         if address != serverIp! {
@@ -77,7 +77,12 @@ class FlcUdpSocket {
   
   static func getMyIp() -> String? {
     let ips: [AnyHashable: String] = UtilObjectiveC.getIPAddresses()
-    let myIp: String = String(ips["wireless"]!)
+    var myIp: String
+    if String(ips["hotspot"]!) != "" {
+      myIp = String(ips["hotspot"]!)
+    } else {
+      myIp = String(ips["wireless"]!)
+    }
     return myIp
   }
   

@@ -95,7 +95,12 @@ class FlcUdpSocket {
   
   static func getMyIp() -> String? {
     let ips: [AnyHashable: String] = UtilObjectiveC.getIPAddresses()
-    let myIp: String = String(ips["wireless"]!)
+    var myIp: String
+    if String(ips["hotspot"]!) != "" {
+      myIp = String(ips["hotspot"]!)
+    } else {
+      myIp = String(ips["wireless"]!)
+    }
     return myIp
   }
   

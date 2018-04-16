@@ -22,7 +22,7 @@ class ViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
     serverIpAddressLabel.text = FlcUdpSocket.getMyIp()!
-    ipAddressTextField.text = "192.168.1.144"
+    ipAddressTextField.text = "172.20.10.2"
     portTextField.text = String(1337)
   }
   
