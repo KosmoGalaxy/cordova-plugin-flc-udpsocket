@@ -42,8 +42,8 @@
       <source-file src="src/ios/pl/fulllegitcode/udpsocket/flcudpsocket.c" target-dir="src/pl/fulllegitcode/udpsocket" />
       <source-file src="src/ios/pl/fulllegitcode/udpsocket/FlcUdpSocket.swift" target-dir="src/pl/fulllegitcode/udpsocket" />
       <source-file src="src/ios/pl/fulllegitcode/udpsocket/UDPClient.swift" target-dir="src/pl/fulllegitcode/udpsocket" />
-      <source-file src="src/ios/pl/fulllegitcode/udpsocket/Socket.swift" target-dir="src/pl/fulllegitcode/udpsocket" />
-      <source-file src="src/ios/pl/fulllegitcode/udpsocket/Result.swift" target-dir="src/pl/fulllegitcode/udpsocket" />
+      <source-file src="src/ios/pl/fulllegitcode/udpsocket/UDPSocket.swift" target-dir="src/pl/fulllegitcode/udpsocket" />
+      <source-file src="src/ios/pl/fulllegitcode/udpsocket/UDPResult.swift" target-dir="src/pl/fulllegitcode/udpsocket" />
       <source-file src="src/ios/pl/fulllegitcode/udpsocket/FlcUdpSocketPlugin.swift" target-dir="src/pl/fulllegitcode/udpsocket" />
     </platform>
 </plugin>
