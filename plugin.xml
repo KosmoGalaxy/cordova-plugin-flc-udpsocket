@@ -36,14 +36,14 @@
         </feature>
       </config-file>
       
-      <header-file src="src/ios/pl/fulllegitcode/udpsocket/UtilObjectiveC.h" />
-      <source-file src="src/ios/pl/fulllegitcode/udpsocket/UtilObjectiveC.m" />
-      <header-file src="src/ios/pl/fulllegitcode/udpsocket/flcudpsocket.h" />
-      <source-file src="src/ios/pl/fulllegitcode/udpsocket/flcudpsocket.c" />
-      <source-file src="src/ios/pl/fulllegitcode/udpsocket/FlcUdpSocket.swift" />
-      <source-file src="src/ios/pl/fulllegitcode/udpsocket/UDPClient.swift" />
-      <source-file src="src/ios/pl/fulllegitcode/udpsocket/Socket.swift" />
-      <source-file src="src/ios/pl/fulllegitcode/udpsocket/Result.swift" />
-      <source-file src="src/ios/pl/fulllegitcode/udpsocket/FlcUdpSocketPlugin.swift" />
+      <header-file src="src/ios/pl/fulllegitcode/udpsocket/UtilObjectiveC.h" target-dir="src/pl/fulllegitcode/udpsocket" />
+      <source-file src="src/ios/pl/fulllegitcode/udpsocket/UtilObjectiveC.m" target-dir="src/pl/fulllegitcode/udpsocket" />
+      <header-file src="src/ios/pl/fulllegitcode/udpsocket/flcudpsocket.h" target-dir="src/pl/fulllegitcode/udpsocket" />
+      <source-file src="src/ios/pl/fulllegitcode/udpsocket/flcudpsocket.c" target-dir="src/pl/fulllegitcode/udpsocket" />
+      <source-file src="src/ios/pl/fulllegitcode/udpsocket/FlcUdpSocket.swift" target-dir="src/pl/fulllegitcode/udpsocket" />
+      <source-file src="src/ios/pl/fulllegitcode/udpsocket/UDPClient.swift" target-dir="src/pl/fulllegitcode/udpsocket" />
+      <source-file src="src/ios/pl/fulllegitcode/udpsocket/Socket.swift" target-dir="src/pl/fulllegitcode/udpsocket" />
+      <source-file src="src/ios/pl/fulllegitcode/udpsocket/Result.swift" target-dir="src/pl/fulllegitcode/udpsocket" />
+      <source-file src="src/ios/pl/fulllegitcode/udpsocket/FlcUdpSocketPlugin.swift" target-dir="src/pl/fulllegitcode/udpsocket" />
     </platform>
 </plugin>
