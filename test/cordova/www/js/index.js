@@ -16,82 +16,93 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-var app = {
+let app = {
+  // Application Constructor
   initialize: function() {
     document.addEventListener('deviceready', this.onDeviceReady.bind(this), false);
   },
-  
+
+  // deviceready Event Handler
+  //
+  // Bind any cordova events here. Common events are:
+  // 'pause', 'resume', etc.
   onDeviceReady: function() {
     this.receivedEvent('deviceready');
-    this.test();
+    setTimeout(() => this.test(), 5000);
   },
-  
+
+  // Update DOM on a Received Event
   receivedEvent: function(id) {
-    var parentElement = document.getElementById(id);
-    var listeningElement = parentElement.querySelector('.listening');
-    var receivedElement = parentElement.querySelector('.received');
-    
+    let parentElement = document.getElementById(id);
+    let listeningElement = parentElement.querySelector('.listening');
+    let receivedElement = parentElement.querySelector('.received');
+
     listeningElement.setAttribute('style', 'display:none;');
     receivedElement.setAttribute('style', 'display:block;');
-    
+
     document.getElementById('test').setAttribute('style', 'display:block;');
-    
+
     console.log('Received Event: ' + id);
   },
-  
+
   socket: null,
-  
+
   test: function() {
-    var self = this;
+    this.create();
+  },
+
+  create: function() {
+    let self = this;
     cordova.plugins.FlcUdpSocket.create(
       socket => {
         self.socket = socket;
-        console.log('Socket create success');
-                                        
-        var sendButton = document.getElementById('button-send');
+        console.log('Socket create success, id: ' + socket.id);
+
+        let sendButton = document.getElementById('button-send');
         sendButton.onclick = function() {
           self.send();
           return false;
-        }
-                                        
-        self.startReceiving();
+        };
+
+        // self.startReceiving();
       },
       e => {
         console.error(e);
       }
     );
   },
-  
+
   send: function() {
-    var self = this;
+    let self = this;
     if (!self.socket) {
       console.error('Socket not yet created');
     }
-    
-    var ip = document.getElementById('input-ip').value;
-    var port = parseInt(document.getElementById('input-port').value);
-    var msg = document.getElementById('input-msg').value;
-    
+
+    let ip = document.getElementById('input-ip').value;
+    let port = parseInt(document.getElementById('input-port').value);
+    let msg = document.getElementById('input-msg').value;
+
+    console.log(self.socket.id, ip, port, msg);
     self.socket.send(ip, port, msg, () => {
       console.log('Send success');
     }, e => {
       console.error(e);
     });
   },
-  
+
   startReceiving: function() {
-    var self = this;
+    let self = this;
     if (!self.socket) {
       console.error('Socket not yet created');
     }
-    
-    var consoleTextarea = document.getElementById('console');
-    var listenPort = parseInt(document.getElementById('input-port').value);
-    
+
+    let consoleTextarea = document.getElementById('console');
+    let listenPort = parseInt(document.getElementById('input-port').value);
+
     self.socket.receive(
       listenPort,
       (ip, port, msg) => {
-        var text = consoleTextarea.value;
+        let text = consoleTextarea.value;
         text += "(" + ip + ":" + port + "): " + msg + "\n";
         consoleTextarea.value = text;
       },
@@ -100,7 +111,6 @@ var app = {
       }
     );
   }
-  
 };
 
 app.initialize();

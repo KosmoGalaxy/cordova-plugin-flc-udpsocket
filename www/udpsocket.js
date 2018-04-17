@@ -36,7 +36,7 @@ UdpSocket.create = function(successCallback, errorCallback) {
     },
     function(message) {
       if (errorCallback) {
-        errorCallback(socket, message);
+        errorCallback(message);
       }
     },
     'FlcUdpSocket',
@@ -57,7 +57,7 @@ UdpSocket.prototype.send = function(ip, port, packet, successCallback, errorCall
     },
     function(message) {
       if (errorCallback) {
-        errorCallback(this, message);
+        errorCallback(message);
       }
     },
     'FlcUdpSocket',
@@ -78,7 +78,7 @@ UdpSocket.prototype.broadcast = function(port, packet, successCallback, errorCal
     },
     function(message) {
       if (errorCallback) {
-        errorCallback(this, message);
+        errorCallback(message);
       }
     },
     'FlcUdpSocket',
@@ -99,7 +99,7 @@ UdpSocket.prototype.receive = function(port, nextCallback, errorCallback) {
     },
     function(message) {
       if (errorCallback) {
-        errorCallback(this, message);
+        errorCallback(message);
       }
     },
     'FlcUdpSocket',
@@ -121,7 +121,7 @@ UdpSocket.prototype.close = function(successCallback, errorCallback) {
     },
     function(message) {
       if (errorCallback) {
-        errorCallback(this, message);
+        errorCallback(message);
       }
     },
     'FlcUdpSocket',

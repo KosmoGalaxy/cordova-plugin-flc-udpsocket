@@ -6,12 +6,12 @@ copyDirectory(
   '../src/android/pl/fulllegitcode/udpsocket',
   ['FlcUdpSocketPlugin.java', 'Socket.java']
 );
-/*cmd.get(
-  'cd cordova && cordova plugin remove cordova-plugin-udp-tcpsocket',
+cmd.get(
+  'cd cordova && cordova plugin remove cordova-plugin-flc-udpsocket',
   (err, data, stderr) => {
     console.log(data);
     cmd.get(
-      'cd cordova && cordova plugin add cordova-plugin-udp-tcpsocket --searchpath=../..',
+      'cd cordova && cordova plugin add cordova-plugin-flc-udpsocket --searchpath=../..',
       (err, data, stderr) => {
         if (err) {
           console.error(err);
@@ -25,4 +25,4 @@ copyDirectory(
       }
     );
   }
-);*/
+);
