@@ -2,7 +2,7 @@ import Foundation
 
 @_silgen_name("flc_udpsocket_receive") func c_flc_udpsocket_receive(_ fd:Int32,buff:UnsafePointer<Byte>,len:Int32,ip:UnsafePointer<Int8>,port:UnsafePointer<Int32>) -> Int32
 
-open class UDPClient: Socket {
+open class UDPClient: UDPSocket {
   
   var isBound = false
   
@@ -15,7 +15,7 @@ open class UDPClient: Socket {
     }
   }
   
-  open func send(toIp: String, toPort: Int32, packet: String) -> Result {
+  open func send(toIp: String, toPort: Int32, packet: String) -> UDPResult {
     guard let fd = self.fd else { return .failure(SocketError.connectionClosed) }
     
     let sendsize = flc_udpsocket_sendto(fd, packet, Int32(strlen(packet)), toIp, toPort)
@@ -26,7 +26,7 @@ open class UDPClient: Socket {
     }
   }
   
-  open func broadcast(toPort: Int32, packet: String) -> Result {
+  open func broadcast(toPort: Int32, packet: String) -> UDPResult {
     guard let fd = self.fd else { return .failure(SocketError.connectionClosed) }
     
     let sendsize = flc_udpsocket_broadcast(fd, packet, Int32(strlen(packet)), address, toPort)
@@ -37,7 +37,7 @@ open class UDPClient: Socket {
     }
   }
   
-  open func bind(port: Int32) -> Result {
+  open func bind(port: Int32) -> UDPResult {
     if isBound {
       return .failure(SocketError.alreadyBound)
     }
