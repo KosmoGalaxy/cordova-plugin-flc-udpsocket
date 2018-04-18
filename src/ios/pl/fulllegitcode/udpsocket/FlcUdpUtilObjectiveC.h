@@ -1,5 +1,5 @@
-#ifndef UtilObjectiveC_h
-#define UtilObjectiveC_h
+#ifndef FlcUdpUtilObjectiveC_h
+#define FlcUdpUtilObjectiveC_h
 
 #import <Foundation/Foundation.h>
 
@@ -9,4 +9,4 @@
 
 @end
 
-#endif /* UtilObjectiveC_h */
+#endif /* FlcUdpUtilObjectiveC_h */
