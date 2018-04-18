@@ -30,8 +30,6 @@
 
 import Foundation
 
-public typealias Byte = UInt8
-
 open class UDPSocket {
   
   public let address: String?
@@ -44,7 +42,7 @@ open class UDPSocket {
   
 }
 
-public enum SocketError: Error {
+public enum UDPSocketError: Error {
   case queryFailed
   case connectionClosed
   case connectionTimeout
