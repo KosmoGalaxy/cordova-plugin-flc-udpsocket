@@ -36,8 +36,8 @@
         </feature>
       </config-file>
       
-      <header-file src="src/ios/pl/fulllegitcode/udpsocket/UtilObjectiveC.h" target-dir="src/pl/fulllegitcode/udpsocket" />
-      <source-file src="src/ios/pl/fulllegitcode/udpsocket/UtilObjectiveC.m" target-dir="src/pl/fulllegitcode/udpsocket" />
+      <header-file src="src/ios/pl/fulllegitcode/udpsocket/FlcUdpUtilObjectiveC.h" target-dir="src/pl/fulllegitcode/udpsocket" />
+      <source-file src="src/ios/pl/fulllegitcode/udpsocket/FlcUdpUtilObjectiveC.m" target-dir="src/pl/fulllegitcode/udpsocket" />
       <header-file src="src/ios/pl/fulllegitcode/udpsocket/flcudpsocket.h" target-dir="src/pl/fulllegitcode/udpsocket" />
       <source-file src="src/ios/pl/fulllegitcode/udpsocket/flcudpsocket.c" target-dir="src/pl/fulllegitcode/udpsocket" />
       <source-file src="src/ios/pl/fulllegitcode/udpsocket/FlcUdpSocket.swift" target-dir="src/pl/fulllegitcode/udpsocket" />
