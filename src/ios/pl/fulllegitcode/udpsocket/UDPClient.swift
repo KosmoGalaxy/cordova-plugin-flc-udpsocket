@@ -1,6 +1,6 @@
 import Foundation
 
-@_silgen_name("flc_udpsocket_receive") func c_flc_udpsocket_receive(_ fd:Int32,buff:UnsafePointer<Byte>,len:Int32,ip:UnsafePointer<Int8>,port:UnsafePointer<Int32>) -> Int32
+@_silgen_name("flc_udpsocket_receive") func c_flc_udpsocket_receive(_ fd:Int32,buff:UnsafePointer<UInt8>,len:Int32,ip:UnsafePointer<Int8>,port:UnsafePointer<Int32>) -> Int32
 
 open class UDPClient: UDPSocket {
   
@@ -16,43 +16,43 @@ open class UDPClient: UDPSocket {
   }
   
   open func send(toIp: String, toPort: Int32, packet: String) -> UDPResult {
-    guard let fd = self.fd else { return .failure(SocketError.connectionClosed) }
+    guard let fd = self.fd else { return .failure(UDPSocketError.connectionClosed) }
     
     let sendsize = flc_udpsocket_sendto(fd, packet, Int32(strlen(packet)), toIp, toPort)
     if sendsize == Int32(strlen(packet)) {
       return .success
     } else {
-      return .failure(SocketError.unknownError)
+      return .failure(UDPSocketError.unknownError)
     }
   }
   
   open func broadcast(toPort: Int32, packet: String) -> UDPResult {
-    guard let fd = self.fd else { return .failure(SocketError.connectionClosed) }
+    guard let fd = self.fd else { return .failure(UDPSocketError.connectionClosed) }
     
     let sendsize = flc_udpsocket_broadcast(fd, packet, Int32(strlen(packet)), address, toPort)
     if sendsize == Int32(strlen(packet)) {
       return .success
     } else {
-      return .failure(SocketError.unknownError)
+      return .failure(UDPSocketError.unknownError)
     }
   }
   
   open func bind(port: Int32) -> UDPResult {
     if isBound {
-      return .failure(SocketError.alreadyBound)
+      return .failure(UDPSocketError.alreadyBound)
     }
-    guard let fd = self.fd else { return .failure(SocketError.connectionClosed) }
+    guard let fd = self.fd else { return .failure(UDPSocketError.connectionClosed) }
     if flc_udpsocket_bind(fd, port) == 0 {
       isBound = true
       return .success
     } else {
-      return .failure(SocketError.unknownError)
+      return .failure(UDPSocketError.unknownError)
     }
   }
   
-  open func recv(_ expectlen: Int) -> ([Byte]?, String, Int) {
+  open func recv(_ expectlen: Int) -> ([UInt8]?, String, Int) {
     if let fd = self.fd {
-      var buff: [Byte] = [Byte](repeating: 0x0,count: expectlen)
+      var buff: [UInt8] = [UInt8](repeating: 0x0,count: expectlen)
       var remoteipbuff: [Int8] = [Int8](repeating: 0x0,count: 16)
       var remoteport: Int32 = 0
       let readLen: Int32 = c_flc_udpsocket_receive(fd, buff: buff, len: Int32(expectlen), ip: &remoteipbuff, port: &remoteport)
@@ -67,7 +67,7 @@ open class UDPClient: UDPSocket {
       }
       
       let rs = buff[0...Int(readLen-1)]
-      let data: [Byte] = Array(rs)
+      let data: [UInt8] = Array(rs)
       return (data, address, port)
     }
     return (nil, "no ip", 0)

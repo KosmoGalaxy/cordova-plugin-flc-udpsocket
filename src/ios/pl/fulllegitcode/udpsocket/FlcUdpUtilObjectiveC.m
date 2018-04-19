@@ -2,9 +2,9 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <ifaddrs.h>
-#import "UtilObjectiveC.h"
+#import "FlcUdpUtilObjectiveC.h"
 
-@implementation UtilObjectiveC
+@implementation FlcUdpUtilObjectiveC
 
 + (NSDictionary *)getIPAddresses {
   const NSString *WIFI_IF = @"en0";
@@ -32,7 +32,7 @@
         continue;
       }
       if(temp_addr->ifa_addr->sa_family == AF_INET) {
-        // Check if interface is en0 which is the wifi connection on the iPhone
+        // Check if interface is bridge100 which is the hotspot on the iPhone
         if([[NSString stringWithUTF8String:temp_addr->ifa_name] isEqualToString:HOTSPOT_IF]) {
           // Get NSString from C String
           [addresses setObject:[NSString stringWithUTF8String:inet_ntoa(((struct sockaddr_in *)temp_addr->ifa_addr)->sin_addr)] forKey:@"hotspot"];

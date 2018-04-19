@@ -15,7 +15,7 @@ enum FlcUdpSocketError: Error {
   case alreadyBound
 }
 
-let BUFFER_SIZE: Int = 16 * 1024;
+let UDP_BUFFER_SIZE: Int = 16 * 1024;
 
 class FlcUdpSocket {
   
@@ -71,7 +71,7 @@ class FlcUdpSocket {
     _ = client!.bind(port: port)
     
     while !closed {
-      let (data, address, port) = client!.recv(BUFFER_SIZE)
+      let (data, address, port) = client!.recv(UDP_BUFFER_SIZE)
       if data != nil {
         let dataString: String = String(data: Data(data!), encoding: .utf8)!
         if receiveFromOwnIp {
@@ -94,7 +94,7 @@ class FlcUdpSocket {
   }
   
   static func getMyIp() -> String? {
-    let ips: [AnyHashable: String] = UtilObjectiveC.getIPAddresses()
+    let ips: [AnyHashable: String] = FlcUdpUtilObjectiveC.getIPAddresses()
     var myIp: String
     if String(ips["hotspot"]!) != "" {
       myIp = String(ips["hotspot"]!)
