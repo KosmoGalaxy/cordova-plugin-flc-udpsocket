@@ -1,5 +1,7 @@
-﻿using System;
+﻿using FullLegitCode.UdpSocket;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -25,6 +27,28 @@ namespace FlcUdpSocketTest
         public MainPage()
         {
             this.InitializeComponent();
+            Test();
+        }
+
+        async void Test()
+        {
+            Socket.Create(1);
+            Socket.Listen(1, 3060).Progress = (asyncInfo, progressInfo) =>
+            {
+                try
+                {
+                    Debug.WriteLine("[FlcUdpSocketTest] received: " + (string) progressInfo[0] + ":" + (int) progressInfo[1] + " " + (string) progressInfo[2]);
+                }
+                catch (Exception e) { Debug.Fail(e.Message); }
+            };
+            //Socket.Send(1, "192.168.1.142", 3062, "FlcUdpSocket send");
+            //await System.Threading.Tasks.Task.Delay(1000);
+            await Socket.Send(1, "192.168.1.142", 3065, "FlcUdpSocket send");
+            await System.Threading.Tasks.Task.Delay(2000);
+            await Socket.Send(1, "192.168.1.142", 3060, "FlcUdpSocket send");
+            await Socket.Broadcast(1, 3060, "FlcUdpSocket broadcast");
+            Socket.Close(1);
+            await Socket.Send(1, "192.168.1.142", 3060, "FlcUdpSocket send");
         }
     }
 }

@@ -131,6 +131,12 @@
       <Version>6.0.8</Version>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="FlcUdpSocket\FlcUdpSocket.csproj">
+      <Project>{b6288ee5-229a-46e9-a389-d41e2da0c6d9}</Project>
+      <Name>FlcUdpSocket</Name>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

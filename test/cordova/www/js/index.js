@@ -64,7 +64,7 @@ let app = {
           return false;
         };
 
-        // self.startReceiving();
+        self.startReceiving();
       },
       e => {
         console.error(e);
@@ -82,7 +82,6 @@ let app = {
     let port = parseInt(document.getElementById('input-port').value);
     let msg = document.getElementById('input-msg').value;
 
-    console.log(self.socket.id, ip, port, msg);
     self.socket.send(ip, port, msg, () => {
       console.log('Send success');
     }, e => {
@@ -97,7 +96,8 @@ let app = {
     }
 
     let consoleTextarea = document.getElementById('console');
-    let listenPort = parseInt(document.getElementById('input-port').value);
+    // let listenPort = parseInt(document.getElementById('input-port').value);
+    let listenPort = 3060;
 
     self.socket.receive(
       listenPort,

@@ -1,5 +1,5 @@
 const exec = require('cordova/exec');
-var nextId = 1;
+let nextId = 1;
 
 function UdpSocket() {
   this.id = nextId++;
