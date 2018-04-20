@@ -53,5 +53,9 @@
         </js-module>
 
         <framework src="src/windows/FullLegitCode.UdpSocket.winmd" custom="true" />
+
+        <config-file target="package.appxmanifest" parent="/Package/Capabilities">
+            <Capability Name="privateNetworkClientServer" />
+        </config-file>
     </platform>
 </plugin>

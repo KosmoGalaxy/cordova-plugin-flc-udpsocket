@@ -23,6 +23,7 @@ namespace FullLegitCode.UdpSocket
 
         const string TAG = "[FlcUdpSocket] ";
 
+
         static Dictionary<int, Socket> Sockets { get; } = new Dictionary<int, Socket>();
 
         public static IAsyncAction Broadcast(int id, int port, string packet)
