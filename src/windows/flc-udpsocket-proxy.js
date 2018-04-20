@@ -17,14 +17,17 @@ function create(successCallback, errorCallback, args) {
 
 function listen(successCallback, errorCallback, args) {
   try {
-    const id = args[0], port = args[1];
+    const id = args[0], port = args[1], receiveCallback = args[2];
     component.listen(id, port)
     .then(
       () => {},
       errorCallback,
       payload => {
-        console.log('--', payload[0], payload[1], payload[2]);
-        successCallback({ip: payload[0], port: payload[1], packet: payload[2]});
+        if (payload.length !== 3) {
+          console.error('[FlcUdpSocket.receive] payload invalid (payload)=', payload);
+          return;
+        }
+        receiveCallback({ip: payload[0], port: payload[1], packet: payload[2]});
       }
     );
   } catch (e) { errorCallback(e) }

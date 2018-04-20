@@ -91,12 +91,13 @@ UdpSocket.prototype.receive = function(port, nextCallback, errorCallback) {
   if (this.isClosed) {
     return;
   }
+  function receiveCallback(payload) {
+    if (nextCallback) {
+      nextCallback(payload.ip, payload.port, payload.packet);
+    }
+  }
   exec(
-    function(payload) {
-      if (nextCallback) {
-        nextCallback(payload.ip, payload.port, payload.packet);
-      }
-    },
+    function() {},
     function(message) {
       if (errorCallback) {
         errorCallback(message);
@@ -104,7 +105,7 @@ UdpSocket.prototype.receive = function(port, nextCallback, errorCallback) {
     },
     'FlcUdpSocket',
     'receive',
-    [this.id, parseInt(port)]
+    [this.id, parseInt(port), receiveCallback]
   );
 };
 
