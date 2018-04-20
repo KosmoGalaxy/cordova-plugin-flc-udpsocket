@@ -20,10 +20,10 @@ function listen(successCallback, errorCallback, args) {
     const id = args[0], port = args[1];
     component.listen(id, port)
     .then(
-      a => console.log('<<', a),
+      () => {},
       errorCallback,
       payload => {
-        console.log('--', payload);
+        console.log('--', payload[0], payload[1], payload[2]);
         successCallback({ip: payload[0], port: payload[1], packet: payload[2]});
       }
     );
