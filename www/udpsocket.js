@@ -97,7 +97,7 @@ UdpSocket.prototype.receive = function(port, nextCallback, errorCallback) {
     }
   }
   exec(
-    function() {},
+    receiveCallback,
     function(message) {
       if (errorCallback) {
         errorCallback(message);

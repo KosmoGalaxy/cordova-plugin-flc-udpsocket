@@ -1,2 +1,5 @@
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
 node_modules/
 .DS_STORE
