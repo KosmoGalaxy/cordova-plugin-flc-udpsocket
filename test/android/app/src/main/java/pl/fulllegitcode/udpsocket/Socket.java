@@ -81,7 +81,7 @@ public class Socket extends DatagramSocket {
         FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "already bound. id=%d port=%d", id(), getLocalPort()));
       }
       FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "receive start. id=%d port=%d", id(), getLocalPort()));
-      byte[] bytes = new byte[16 * 1024];
+      byte[] bytes = new byte[1024];
       DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
       while (!isClosed()) {
         receive(packet);

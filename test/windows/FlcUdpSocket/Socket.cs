@@ -194,14 +194,22 @@ namespace FullLegitCode.UdpSocket
                 }
                 byte[] bytes = Encoding.UTF8.GetBytes(packet);
                 await Client.SendAsync(bytes, bytes.Length, ip.ToString(), port);
-                Debug.WriteLine(TAG + string.Format("socket broadcast. address={0}:{1} size={2}", ip, port, bytes.Length));
+                //Debug.WriteLine(TAG + string.Format("socket broadcast. address={0}:{1} size={2}", ip, port, bytes.Length));
             })
             .AsAsyncAction();
         }
 
         public void CloseSync()
         {
-            Client.Dispose();
+            try
+            {
+                Client.Client.Shutdown(SocketShutdown.Both);
+                Client.Dispose();
+            }
+            catch (Exception e)
+            {
+                Debug.Fail(e.ToString());
+            }
         }
 
         public IAsyncActionWithProgress<IList<dynamic>> ListenAsync(int port)
@@ -221,7 +229,7 @@ namespace FullLegitCode.UdpSocket
                             result.RemoteEndPoint.Port,
                             Encoding.UTF8.GetString(result.Buffer)
                         };
-                        Debug.WriteLine(TAG + string.Format("socket received. address={0}:{1} size={2}", (string)payload[0], (int)payload[1], ((string)payload[2]).Length));
+                        //Debug.WriteLine(TAG + string.Format("socket received. address={0}:{1} size={2}", (string)payload[0], (int)payload[1], ((string)payload[2]).Length));
                         progress.Report(payload);
                     }
                 }, token);
@@ -234,7 +242,7 @@ namespace FullLegitCode.UdpSocket
             {
                 byte[] bytes = Encoding.UTF8.GetBytes(packet);
                 await Client.SendAsync(bytes, bytes.Length, ip, port);
-                Debug.WriteLine(TAG + string.Format("socket sent. address={0}:{1} size={2}", ip, port, bytes.Length));
+                //Debug.WriteLine(TAG + string.Format("socket sent. address={0}:{1} size={2}", ip, port, bytes.Length));
             })
             .AsAsyncAction();
         }
