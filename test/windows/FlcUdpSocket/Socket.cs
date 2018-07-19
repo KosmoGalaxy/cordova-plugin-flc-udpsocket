@@ -171,7 +171,8 @@ namespace FullLegitCode.UdpSocket
 
 
         public int Id { get; private set; }
-        UdpClient Client { get; } = new UdpClient();
+        private UdpClient Client { get; } = new UdpClient();
+        private bool _isClosed;
 
         Socket(int id)
         {
@@ -203,6 +204,7 @@ namespace FullLegitCode.UdpSocket
         {
             try
             {
+                _isClosed = true;
                 Client.Client.Shutdown(SocketShutdown.Both);
                 Client.Dispose();
             }
@@ -220,7 +222,7 @@ namespace FullLegitCode.UdpSocket
                 {
                     Client.Client.Bind(new IPEndPoint(IPAddress.Any, port));
                     Debug.WriteLine(TAG + string.Format("socket listening. port={0}", port));
-                    while (!token.IsCancellationRequested)
+                    while (!token.IsCancellationRequested && !_isClosed)
                     {
                         UdpReceiveResult result = await Client.ReceiveAsync();
                         List<dynamic> payload = new List<dynamic>
