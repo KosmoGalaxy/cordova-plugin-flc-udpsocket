@@ -222,9 +222,22 @@ namespace FullLegitCode.UdpSocket
                 {
                     Client.Client.Bind(new IPEndPoint(IPAddress.Any, port));
                     Debug.WriteLine(TAG + string.Format("socket listening. port={0}", port));
+                    DateTime startTime = DateTime.Now;
+                    bool accept = false;
                     while (!token.IsCancellationRequested && !_isClosed)
                     {
                         UdpReceiveResult result = await Client.ReceiveAsync();
+                        if (!accept)
+                        {
+                            if ((DateTime.Now - startTime).TotalMilliseconds > 1000.0)
+                            {
+                                accept = true;
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
                         List<dynamic> payload = new List<dynamic>
                         {
                             result.RemoteEndPoint.Address.ToString(),
