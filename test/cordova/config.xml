@@ -23,6 +23,6 @@
         <allow-intent href="itms:*" />
         <allow-intent href="itms-apps:*" />
     </platform>
-    <plugin name="cordova-plugin-flc-udpsocket" spec="~1.4.0" />
     <engine name="windows" spec="^6.0.0" />
+    <plugin name="cordova-plugin-flc-udpsocket" spec="~1.4.1" />
 </widget>

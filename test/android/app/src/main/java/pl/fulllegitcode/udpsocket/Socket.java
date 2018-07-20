@@ -6,6 +6,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.util.Date;
 import java.util.Locale;
 
 public class Socket extends DatagramSocket {
@@ -40,7 +41,7 @@ public class Socket extends DatagramSocket {
       return "socket is closed";
     }
     try {
-      FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "send. id=%d address=%s:%d packet=%s", id(), ip, port, packetString.substring(0, 100)));
+//      FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "send. id=%d address=%s:%d packet=%s", id(), ip, port, packetString.substring(0, 100)));
       byte[] bytes = packetString.getBytes();
       DatagramPacket packet = new DatagramPacket(bytes, bytes.length, InetAddress.getByName(ip), port);
       send(packet);
@@ -57,7 +58,7 @@ public class Socket extends DatagramSocket {
     }
     InetAddress address = null;
     try {
-      FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "broadcast. id=%d port=%d packet=%s", id(), port, packetString.substring(0, 100)));
+//      FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "broadcast. id=%d port=%d packet=%s", id(), port, packetString.substring(0, 100)));
       address = FlcUdpSocketPlugin.getBroadcastAddress();
       byte[] bytes = packetString.getBytes();
       DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, port);
@@ -83,8 +84,17 @@ public class Socket extends DatagramSocket {
       FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "receive start. id=%d port=%d", id(), getLocalPort()));
       byte[] bytes = new byte[1024];
       DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
+      long startTime = System.currentTimeMillis();
+      boolean accept = false;
       while (!isClosed()) {
         receive(packet);
+        if (!accept) {
+          if (System.currentTimeMillis() - startTime > 1000) {
+            accept = true;
+          } else {
+            continue;
+          }
+        }
         String inPacketString = new String(packet.getData(), 0, packet.getLength());
         String inIp = packet.getAddress().getHostAddress();
         int inPort = packet.getPort();
@@ -92,7 +102,7 @@ public class Socket extends DatagramSocket {
         if (!FlcUdpSocketPlugin.receiveFromOwnIp() && inIp.equals(myIp)) {
           continue;
         }
-        FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "receive. id=%d myIp=%s address=%s:%d packet=%s", id(), myIp, inIp, inPort, inPacketString.substring(0, 100)));
+//        FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "receive. id=%d myIp=%s address=%s:%d packet=%s", id(), myIp, inIp, inPort, inPacketString.substring(0, 100)));
         callback.next(inIp, inPort, inPacketString);
       }
     } catch (Exception e) {
