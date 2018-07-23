@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
-using System.Net.Sockets;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Networking;
 using Windows.Networking.Connectivity;
+using Windows.Networking.Sockets;
+using Windows.Storage.Streams;
+using Windows.System.Threading;
 
 namespace FullLegitCode.UdpSocket
 {
@@ -171,16 +174,19 @@ namespace FullLegitCode.UdpSocket
 
 
         public int Id { get; private set; }
-        private UdpClient Client { get; } = new UdpClient();
+        //private UdpClient Client { get; } = new UdpClient();
+        private DatagramSocket _InternalSocket { get; }
+        private Dictionary<string, StreamWriter> _StreamWriters { get; } = new Dictionary<string, StreamWriter>();
         private bool _isClosed;
 
         Socket(int id)
         {
             Id = id;
-            Client.EnableBroadcast = true;
-            Client.ExclusiveAddressUse = false;
-            Client.MulticastLoopback = true;
-            Client.Client.IOControl(-1744830452, new byte[] { 0, 0, 0, 0 }, null);
+            _InternalSocket = new DatagramSocket();
+            //Client.EnableBroadcast = true;
+            //Client.ExclusiveAddressUse = false;
+            //Client.MulticastLoopback = true;
+            //Client.Client.IOControl(-1744830452, new byte[] { 0, 0, 0, 0 }, null);
             Debug.WriteLine(TAG + "socket created. id=" + id);
         }
 
@@ -193,8 +199,11 @@ namespace FullLegitCode.UdpSocket
                 {
                     throw new Exception("cannot resolve ip");
                 }
-                byte[] bytes = Encoding.UTF8.GetBytes(packet);
-                await Client.SendAsync(bytes, bytes.Length, ip.ToString(), port);
+                StreamWriter writer = await _GetStreamWriter(ip.ToString(), port);
+                await writer.WriteAsync(packet);
+                await writer.FlushAsync();
+                //byte[] bytes = Encoding.UTF8.GetBytes(packet);
+                //await Client.SendAsync(bytes, bytes.Length, ip.ToString(), port);
                 //Debug.WriteLine(TAG + string.Format("socket broadcast. address={0}:{1} size={2}", ip, port, bytes.Length));
             })
             .AsAsyncAction();
@@ -205,8 +214,16 @@ namespace FullLegitCode.UdpSocket
             try
             {
                 _isClosed = true;
-                Client.Client.Shutdown(SocketShutdown.Both);
-                Client.Dispose();
+                //Client.Client.Shutdown(SocketShutdown.Both);
+                //Client.Dispose();
+                _InternalSocket.Dispose();
+                foreach (KeyValuePair<string, StreamWriter> kvp in _StreamWriters)
+                {
+                    StreamWriter writer = kvp.Value;
+                    writer.BaseStream.Dispose();
+                    writer.Dispose();
+
+                }
             }
             catch (Exception e)
             {
@@ -214,7 +231,7 @@ namespace FullLegitCode.UdpSocket
             }
         }
 
-        public IAsyncActionWithProgress<IList<dynamic>> ListenAsync(int port)
+        /*public IAsyncActionWithProgress<IList<dynamic>> ListenAsync(int port)
         {
             return AsyncInfo.Run<IList<dynamic>>((token, progress) =>
             {
@@ -249,17 +266,68 @@ namespace FullLegitCode.UdpSocket
                     }
                 }, token);
             });
+        }*/
+
+        public IAsyncActionWithProgress<IList<dynamic>> ListenAsync(int port)
+        {
+            return AsyncInfo.Run<IList<dynamic>>((token, progress) =>
+            {
+                return Task.Run(async () =>
+                {
+                    _InternalSocket.MessageReceived += (sender, args) =>
+                    {
+                        string data;
+                        using (DataReader dataReader = args.GetDataReader())
+                        {
+                            data = dataReader.ReadString(dataReader.UnconsumedBufferLength);
+                        }
+                        List<dynamic> payload = new List<dynamic>
+                        {
+                            args.RemoteAddress.ToString(),
+                            int.Parse(args.RemotePort),
+                            data
+                        };
+                        progress.Report(payload);
+                    };
+                    await _InternalSocket.BindServiceNameAsync(port.ToString());
+                    /*await ThreadPool.RunAsync(workItem =>
+                    {
+                        InternalSocket.MessageReceived += (s, e) =>
+                        {
+                            
+                        };
+                    },
+                    WorkItemPriority.High,
+                    WorkItemOptions.TimeSliced);*/
+                },
+                token);
+            });
         }
 
         public IAsyncAction SendAsync(string ip, int port, string packet)
         {
             return Task.Run(async () =>
             {
-                byte[] bytes = Encoding.UTF8.GetBytes(packet);
-                await Client.SendAsync(bytes, bytes.Length, ip, port);
+                StreamWriter writer = await _GetStreamWriter(ip, port);
+                await writer.WriteAsync(packet);
+                await writer.FlushAsync();
+                //byte[] bytes = Encoding.UTF8.GetBytes(packet);
+                //await Client.SendAsync(bytes, bytes.Length, ip, port);
                 //Debug.WriteLine(TAG + string.Format("socket sent. address={0}:{1} size={2}", ip, port, bytes.Length));
             })
             .AsAsyncAction();
+        }
+
+        private async Task<StreamWriter> _GetStreamWriter(string ip, int port)
+        {
+            string key = ip + port;
+            if (!_StreamWriters.ContainsKey(key))
+            {
+                Stream stream = (await _InternalSocket.GetOutputStreamAsync(new HostName(ip), port.ToString())).AsStreamForWrite();
+                StreamWriter writer = new StreamWriter(stream);
+                _StreamWriters.Add(key, writer);
+            }
+            return _StreamWriters[key];
         }
     }
 }
