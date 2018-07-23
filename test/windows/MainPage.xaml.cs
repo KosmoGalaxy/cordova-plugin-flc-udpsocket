@@ -47,7 +47,8 @@ namespace FlcUdpSocketTest
                     ));
                     if (data == "asd")
                     {
-                        Socket.Send(1, "192.168.43.165", 3060, "fgh");
+                        //Socket.Send(1, "192.168.43.165", 3060, "fgh");
+                        Socket.Broadcast(1, 3060, "fgh");
                     }
                 }
                 catch (Exception e) { Debug.Fail(e.Message); }

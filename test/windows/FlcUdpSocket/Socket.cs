@@ -290,6 +290,10 @@ namespace FullLegitCode.UdpSocket
                         progress.Report(payload);
                     };
                     await _InternalSocket.BindServiceNameAsync(port.ToString());
+                    while (!_isClosed)
+                    {
+                        await Task.Delay(1000);
+                    }
                     /*await ThreadPool.RunAsync(workItem =>
                     {
                         InternalSocket.MessageReceived += (s, e) =>
