@@ -30,37 +30,25 @@ namespace FlcUdpSocketTest
             Test();
         }
 
-        void Test()
+        async void Test()
         {
             Socket.Create(1);
             Socket.Listen(1, 3060).Progress = (asyncInfo, progressInfo) =>
             {
                 try
                 {
-                    string data = (string) progressInfo[2];
-                    Debug.WriteLine(string.Format(
-                        "[FlcUdpSocketTest] receive. (thread)={0} (address)={1}:{2} (data)=\"{3}\"",
-                        Environment.CurrentManagedThreadId,
-                        (string) progressInfo[0],
-                        (int) progressInfo[1],
-                        data
-                    ));
-                    if (data == "asd")
-                    {
-                        //Socket.Send(1, "192.168.43.165", 3060, "fgh");
-                        Socket.Broadcast(1, 3060, "fgh");
-                    }
+                    Debug.WriteLine("[FlcUdpSocketTest] received: " + (string) progressInfo[0] + ":" + (int) progressInfo[1] + " " + (string) progressInfo[2]);
                 }
                 catch (Exception e) { Debug.Fail(e.Message); }
             };
             //Socket.Send(1, "192.168.1.142", 3062, "FlcUdpSocket send");
             //await System.Threading.Tasks.Task.Delay(1000);
-            //await Socket.Send(1, "192.168.1.142", 3065, "FlcUdpSocket send");
-            //await System.Threading.Tasks.Task.Delay(2000);
-            //await Socket.Send(1, "192.168.1.142", 3060, "FlcUdpSocket send");
-            //await Socket.Broadcast(1, 3060, "FlcUdpSocket broadcast");
-            //Socket.Close(1);
-            //await Socket.Send(1, "192.168.1.142", 3060, "FlcUdpSocket send");
+            await Socket.Send(1, "192.168.1.142", 3065, "FlcUdpSocket send");
+            await System.Threading.Tasks.Task.Delay(2000);
+            await Socket.Send(1, "192.168.1.142", 3060, "FlcUdpSocket send");
+            await Socket.Broadcast(1, 3060, "FlcUdpSocket broadcast");
+            Socket.Close(1);
+            await Socket.Send(1, "192.168.1.142", 3060, "FlcUdpSocket send");
         }
     }
 }
