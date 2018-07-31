@@ -15,8 +15,7 @@
     },
     "cordova": {
         "plugins": {
-            "cordova-plugin-whitelist": {},
-            "cordova-plugin-flc-udpsocket": {}
+            "cordova-plugin-whitelist": {}
         },
         "platforms": [
             "windows"
