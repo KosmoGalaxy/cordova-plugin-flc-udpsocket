@@ -92,6 +92,7 @@ int flc_udpsocket_get_broadcast_address(char* broadcast_address) {
   struct ifaddrs address;
   int r = flc_udpsocket_get_ifaddrs(&address);
   if (r != 0) {
+    printf("flc_udpsocket_get_ifaddrs() failed\n"); 
     return -1;
   }
   
@@ -129,6 +130,8 @@ int flc_udpsocket_get_ifaddrs(struct ifaddrs *address) {
     perror("getifaddrs");
     return -1;
   }
+   
+  int ifOk = -1;
   
   for (ifa = ifaddr, n = 0; ifa != NULL; ifa = ifa->ifa_next, n++) {
     if (ifa->ifa_addr == NULL) continue;
@@ -140,12 +143,19 @@ int flc_udpsocket_get_ifaddrs(struct ifaddrs *address) {
     
     if (strcmp(ifa->ifa_name, "bridge100") == 0) {
       memcpy(address, ifa, sizeof(struct ifaddrs));
+      ifOk = 0;
       break;
     }
     
     if (strcmp(ifa->ifa_name, "en0") == 0) {
       memcpy(address, ifa, sizeof(struct ifaddrs));
+      ifOk = 0;
     }
+  }
+
+  if (ifOk == -1) {
+      printf("No valid interface found\n");
+      return -1;
   }
   
   freeifaddrs(ifaddr);
