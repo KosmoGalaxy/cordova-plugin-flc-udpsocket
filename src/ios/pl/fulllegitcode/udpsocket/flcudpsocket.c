@@ -21,14 +21,16 @@
 
 int flc_udpsocket_create() {
   int socketfd = socket(AF_INET, SOCK_DGRAM, 0);
-  int r = -1, s = -1;
+  int r = -1, s = -1, n = -1;
   
   int broadcaston = 1;
   int reuseon = 1;
+  int nosigpipeon = 1;
   r = setsockopt(socketfd, SOL_SOCKET, SO_BROADCAST, &broadcaston, sizeof(broadcaston));
   s = setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &reuseon, sizeof(reuseon));
+  n = setsockopt(socketfd, SOL_SOCKET, SO_NOSIGPIPE, &nosigpipeon, sizeof(nosigpipeon));
   
-  if (r == 0 & s == 0) {
+  if (r == 0 & s == 0 & n == 0) {
     return socketfd;
   } else {
     return -1;
