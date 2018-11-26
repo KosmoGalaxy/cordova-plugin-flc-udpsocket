@@ -40,6 +40,9 @@ open class UDPSocket {
     fd = 0
   }
   
+  public static func getSocketErrorCode(_ fd: Int32) -> Int32 {
+    return flc_udpsocket_get_error(fd);
+  }
 }
 
 public enum UDPSocketError: Error {

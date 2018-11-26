@@ -41,6 +41,9 @@ class FlcUdpSocket {
     case .success:
       break
     case .failure(let error):
+      if (error as! UDPSocketError) == UDPSocketError.connectionClosed {
+        throw FlcUdpSocketError.socketClosed
+      }
       print("Send error", error)
       throw FlcUdpSocketError.sendFailed
     }
@@ -54,6 +57,9 @@ class FlcUdpSocket {
     case .success:
       break
     case .failure(let error):
+      if (error as! UDPSocketError) == UDPSocketError.connectionClosed {
+        throw FlcUdpSocketError.socketClosed
+      }
       print("Broadcast error", error)
       throw FlcUdpSocketError.sendFailed
     }

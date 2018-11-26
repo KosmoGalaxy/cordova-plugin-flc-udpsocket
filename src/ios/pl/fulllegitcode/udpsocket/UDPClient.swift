@@ -22,6 +22,12 @@ open class UDPClient: UDPSocket {
     if sendsize == Int32(strlen(packet)) {
       return .success
     } else {
+      let errcode = UDPSocket.getSocketErrorCode(fd);
+      if (errcode == 9) {
+        print("socket error_code: bad file descriptor");
+        self.close();
+        return .failure(UDPSocketError.connectionClosed)
+      }
       return .failure(UDPSocketError.unknownError)
     }
   }
@@ -33,6 +39,12 @@ open class UDPClient: UDPSocket {
     if sendsize == Int32(strlen(packet)) {
       return .success
     } else {
+      let errcode = UDPSocket.getSocketErrorCode(fd);
+      if (errcode == 9) {
+        print("socket error_code: bad file descriptor");
+        self.close();
+        return .failure(UDPSocketError.connectionClosed)
+      }
       return .failure(UDPSocketError.unknownError)
     }
   }

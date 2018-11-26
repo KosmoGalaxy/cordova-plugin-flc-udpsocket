@@ -17,5 +17,6 @@ int flc_udpsocket_sendto(int socketfd, const char *msg, int len, const char *toa
 int flc_udpsocket_broadcast(int socketfd, const char *msg, int len, const char *address, int toport);
 int flc_udpsocket_get_broadcast_address(char* broadcast_address);
 int flc_udpsocket_get_ifaddrs(struct ifaddrs *address);
+int flc_udpsocket_get_error(int socket_fd);
 
 #endif /* flcudpsocket_h */
