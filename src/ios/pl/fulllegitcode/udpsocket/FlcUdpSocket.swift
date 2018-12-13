@@ -95,7 +95,7 @@ class FlcUdpSocket {
     if closed {
       throw FlcUdpSocketError.socketClosed
     }
-    
+    closed = true
     client?.close()
   }
   
