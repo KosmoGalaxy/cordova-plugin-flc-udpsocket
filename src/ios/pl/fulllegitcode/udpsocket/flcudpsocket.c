@@ -163,3 +163,13 @@ int flc_udpsocket_get_ifaddrs(struct ifaddrs *address) {
   freeifaddrs(ifaddr);
   return 0;
 }
+
+int flc_udpsocket_get_error(int socket_fd) {
+  int error_code;
+  int error_code_size = sizeof(error_code);
+  getsockopt(socket_fd, SOL_SOCKET, SO_ERROR, &error_code, &error_code_size);
+  if (error_code != 0) {
+    printf("flc_udpsocket_get_error error_code = %d\n", error_code);
+  }
+  return error_code;
+}
