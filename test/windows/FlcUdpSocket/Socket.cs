@@ -23,7 +23,7 @@ namespace FullLegitCode.UdpSocket
 
         const string TAG = "[FlcUdpSocket] ";
 
-
+        static readonly object mutex = new object();
         static Dictionary<int, Socket> Sockets { get; } = new Dictionary<int, Socket>();
 
         public static IAsyncAction Broadcast(int id, int port, string packet)
@@ -74,17 +74,23 @@ namespace FullLegitCode.UdpSocket
 
         static bool _AddSocket(int id)
         {
-            if (_SocketExists(id))
+            lock (mutex)
             {
-                return false;
+                if (_SocketExists(id))
+                {
+                    return false;
+                }
+                Sockets.Add(id, new Socket(id));
+                return true;
             }
-            Sockets.Add(id, new Socket(id));
-            return true;
         }
 
         static Socket _GetSocket(int id)
         {
-            return _SocketExists(id) ? Sockets[id] : null;
+            lock (mutex)
+            {
+                return _SocketExists(id) ? Sockets[id] : null;
+            }
         }
 
         static bool _RemoveSocket(int id)
@@ -95,7 +101,10 @@ namespace FullLegitCode.UdpSocket
                 return false;
             }
             socket.CloseSync();
-            Sockets.Remove(id);
+            lock (mutex)
+            {
+                Sockets.Remove(id);
+            }
             return true;
         }
 
@@ -173,6 +182,7 @@ namespace FullLegitCode.UdpSocket
         public int Id { get; private set; }
         private UdpClient Client { get; } = new UdpClient();
         private bool _isClosed;
+        private Queue<Task> _tasks = new Queue<Task>();
 
         Socket(int id)
         {
@@ -181,12 +191,29 @@ namespace FullLegitCode.UdpSocket
             Client.ExclusiveAddressUse = false;
             Client.MulticastLoopback = true;
             Client.Client.IOControl(-1744830452, new byte[] { 0, 0, 0, 0 }, null);
+            _StartTaskLoop();
             Debug.WriteLine(TAG + "socket created. id=" + id);
         }
 
         public IAsyncAction BroadcastAsync(int port, string packet)
         {
-            return Task.Run(async () =>
+            return Task.Run(() =>
+            {
+                _AddTask(new Task(async () =>
+                {
+                    IPAddress ip = _GetBroadcastIp();
+                    if (ip == null)
+                    {
+                        throw new Exception("cannot resolve ip");
+                    }
+                    byte[] bytes = Encoding.UTF8.GetBytes(packet);
+                    await Client.SendAsync(bytes, bytes.Length, ip.ToString(), port);
+                    //Debug.WriteLine(TAG + string.Format("socket broadcast. address={0}:{1} size={2}", ip, port, bytes.Length));
+                }));
+            })
+            .AsAsyncAction();
+
+            /*return Task.Run(async () =>
             {
                 IPAddress ip = _GetBroadcastIp();
                 if (ip == null)
@@ -197,7 +224,7 @@ namespace FullLegitCode.UdpSocket
                 await Client.SendAsync(bytes, bytes.Length, ip.ToString(), port);
                 //Debug.WriteLine(TAG + string.Format("socket broadcast. address={0}:{1} size={2}", ip, port, bytes.Length));
             })
-            .AsAsyncAction();
+            .AsAsyncAction();*/
         }
 
         public void CloseSync()
@@ -253,13 +280,56 @@ namespace FullLegitCode.UdpSocket
 
         public IAsyncAction SendAsync(string ip, int port, string packet)
         {
-            return Task.Run(async () =>
+            return Task.Run(() =>
+            {
+                _AddTask(new Task(async () =>
+                {
+                    byte[] bytes = Encoding.UTF8.GetBytes(packet);
+                    await Client.SendAsync(bytes, bytes.Length, ip, port);
+                    //Debug.WriteLine(TAG + string.Format("socket sent. address={0}:{1} size={2}", ip, port, bytes.Length));
+                }));
+            })
+            .AsAsyncAction();
+
+            /*return Task.Run(async () =>
             {
                 byte[] bytes = Encoding.UTF8.GetBytes(packet);
                 await Client.SendAsync(bytes, bytes.Length, ip, port);
                 //Debug.WriteLine(TAG + string.Format("socket sent. address={0}:{1} size={2}", ip, port, bytes.Length));
             })
-            .AsAsyncAction();
+            .AsAsyncAction();*/
+        }
+
+        private void _AddTask(Task task)
+        {
+            lock (_tasks)
+            {
+                _tasks.Enqueue(task);
+            }
+        }
+
+        private void _StartTaskLoop()
+        {
+            Task.Run(async () =>
+            {
+                while (!_isClosed)
+                {
+                    if (_tasks.Count == 0)
+                    {
+                        await Task.Delay(100);
+                        continue;
+                    }
+
+                    Task task;
+                    lock (_tasks)
+                    {
+                        task = _tasks.Dequeue();
+                    }
+
+                    task.Start();
+                    await task;
+                }
+            });
         }
     }
 }
