@@ -82,19 +82,19 @@ public class Socket extends DatagramSocket {
         FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "already bound. id=%d port=%d", id(), getLocalPort()));
       }
       FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "receive start. id=%d port=%d", id(), getLocalPort()));
-      byte[] bytes = new byte[1024];
+      byte[] bytes = new byte[65507];
       DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
-      long startTime = System.currentTimeMillis();
-      boolean accept = false;
+      /*long startTime = System.currentTimeMillis();
+      boolean accept = false;*/
       while (!isClosed()) {
         receive(packet);
-        if (!accept) {
+        /*if (!accept) {
           if (System.currentTimeMillis() - startTime > 1000) {
             accept = true;
           } else {
             continue;
           }
-        }
+        }*/
         String inPacketString = new String(packet.getData(), 0, packet.getLength());
         String inIp = packet.getAddress().getHostAddress();
         int inPort = packet.getPort();

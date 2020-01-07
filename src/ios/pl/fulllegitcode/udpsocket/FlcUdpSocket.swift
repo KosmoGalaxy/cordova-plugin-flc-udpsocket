@@ -15,7 +15,7 @@ enum FlcUdpSocketError: Error {
   case alreadyBound
 }
 
-let UDP_BUFFER_SIZE: Int = 16 * 1024;
+let UDP_BUFFER_SIZE: Int = 16 * 65507;
 
 class FlcUdpSocket {
   
