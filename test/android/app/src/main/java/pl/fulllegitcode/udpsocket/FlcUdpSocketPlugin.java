@@ -8,6 +8,7 @@ import android.net.wifi.WifiManager;
 import android.util.Log;
 
 import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
@@ -29,10 +30,10 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
   private class Execution {
 
     String action;
-    JSONArray args;
+    CordovaArgs args;
     CallbackContext callbackContext;
 
-    Execution(String action, JSONArray args, CallbackContext callbackContext) {
+    Execution(String action, CordovaArgs args, CallbackContext callbackContext) {
       this.action = action;
       this.args = args;
       this.callbackContext = callbackContext;
@@ -95,7 +96,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
   }
 
   @Override
-  public boolean execute(String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
+  public boolean execute(String action, final CordovaArgs args, final CallbackContext callbackContext) {
     if (action.equals("setDebug")) {
       cordova.getThreadPool().execute(new Runnable() {
         @Override
@@ -126,7 +127,14 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
       });
       return true;
     }
-    if (action.equals("create") || action.equals("send") || action.equals("broadcast") || action.equals("receive") || action.equals("close")) {
+    if (action.equals("create") ||
+      action.equals("send") ||
+      action.equals("sendBytes") ||
+      action.equals("broadcast") ||
+      action.equals("broadcastBytes") ||
+      action.equals("receive") ||
+      action.equals("receiveBytes") ||
+      action.equals("close")) {
       _executions.add(new Execution(action, args, callbackContext));
       _executeNext();
       return true;
@@ -226,20 +234,25 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
 
   private void _execute(Execution execution) {
     String action = execution.action;
-    JSONArray args = execution.args;
+    CordovaArgs args = execution.args;
     CallbackContext callbackContext = execution.callbackContext;
     try {
-      if ("create".equals(action)) {
+      if ("create".equals(action))
         _create(args.getInt(0), callbackContext);
-      } else if ("send".equals(action)) {
-        _send(args.getInt(0), args.getString(1), args.getInt(2), args.getString(3), callbackContext);
-      } else if ("broadcast".equals(action)) {
-        _broadcast(args.getInt(0), args.getInt(1), args.getString(2), callbackContext);
-      } else if ("receive".equals(action)) {
-        _receive(args.getInt(0), args.getInt(1), callbackContext);
-      } else if ("close".equals(action)) {
+      else if ("send".equals(action))
+        _send(args.getInt(0), args.getString(1), args.getInt(2), args.getString(3).getBytes(), callbackContext);
+      else if ("sendBytes".equals(action))
+        _send(args.getInt(0), args.getString(1), args.getInt(2), args.getArrayBuffer(3), callbackContext);
+      else if ("broadcast".equals(action))
+        _broadcast(args.getInt(0), args.getInt(1), args.getString(2).getBytes(), callbackContext);
+      else if ("broadcastBytes".equals(action))
+        _broadcast(args.getInt(0), args.getInt(1), args.getArrayBuffer(2), callbackContext);
+      else if ("receive".equals(action))
+        _receive(args.getInt(0), args.getInt(1), ReceiveFormat.String, callbackContext);
+      else if ("receiveBytes".equals(action))
+        _receive(args.getInt(0), args.getInt(1), ReceiveFormat.Bytes, callbackContext);
+      else if ("close".equals(action))
         _close(args.getInt(0), callbackContext);
-      }
     } catch (Exception e) {
       logError(String.format(Locale.ENGLISH, "error. message=%s", e.getMessage()));
     }
@@ -267,7 +280,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     });
   }
 
-  private void _send(final int id, final String ip, final int port, final String packetString, final CallbackContext callbackContext) {
+  private void _send(final int id, final String ip, final int port, final byte[] bytes, final CallbackContext callbackContext) {
     final Socket socket = _getSocket(id);
     if (socket == null) {
       String message = "socket not found";
@@ -278,7 +291,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     cordova.getThreadPool().execute(new Runnable() {
       @Override
       public void run() {
-        String error = socket.send(ip, port, packetString);
+        String error = socket.send(ip, port, bytes);
         if (error == null) {
           callbackContext.success();
         } else {
@@ -288,7 +301,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     });
   }
 
-  private void _broadcast(int id, final int port, final String packetString, final CallbackContext callbackContext) {
+  private void _broadcast(int id, final int port, final byte[] bytes, final CallbackContext callbackContext) {
     final Socket socket = _getSocket(id);
     if (socket == null) {
       String message = "socket not found";
@@ -299,7 +312,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     cordova.getThreadPool().execute(new Runnable() {
       @Override
       public void run() {
-        String error = socket.broadcast(port, packetString);
+        String error = socket.broadcast(port, bytes);
         if (error == null) {
           callbackContext.success();
         } else {
@@ -309,7 +322,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     });
   }
 
-  private void _receive(final int id, final int port, final CallbackContext callbackContext) {
+  private void _receive(final int id, final int port, final ReceiveFormat format, final CallbackContext callbackContext) {
     final Socket socket = _getSocket(id);
     if (socket == null) {
       String message = "socket not found";
@@ -322,7 +335,23 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
       public void run() {
         Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
         logDebug(String.format(Locale.ENGLISH, "receive thread priority: %d", Thread.currentThread().getPriority()));
-        socket.receive(port, new Socket.ReceiveCallback() {
+        socket.receive(port, format, new Socket.ReceiveCallback() {
+          @Override
+          public void next(String ip, int port, byte[] bytes)
+          {
+            try {
+              JSONObject payload = new JSONObject();
+              payload.put("ip", ip);
+              payload.put("port", port);
+              payload.put("bytes", bytes);
+              PluginResult result = new PluginResult(PluginResult.Status.OK, payload);
+              result.setKeepCallback(true);
+              callbackContext.sendPluginResult(result);
+            } catch (Exception e) {
+              logError(String.format(Locale.ENGLISH, "receive error. id=%d message=%s", id, e.getMessage()));
+            }
+          }
+
           @Override
           public void next(String ip, int port, String packet) {
             try {

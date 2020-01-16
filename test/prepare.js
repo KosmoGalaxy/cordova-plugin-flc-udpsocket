@@ -4,7 +4,7 @@ const copyDirectory = require('./copy-directory');
 copyDirectory(
   './android/app/src/main/java/pl/fulllegitcode/udpsocket',
   '../src/android/pl/fulllegitcode/udpsocket',
-  ['FlcUdpSocketPlugin.java', 'Socket.java']
+  ['FlcUdpSocketPlugin.java', 'ReceiveFormat.java', 'Socket.java']
 );
 cmd.get(
   'cd cordova && cordova plugin remove cordova-plugin-flc-udpsocket',

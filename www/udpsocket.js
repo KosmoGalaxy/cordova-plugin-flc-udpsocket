@@ -66,6 +66,27 @@ UdpSocket.prototype.send = function(ip, port, packet, successCallback, errorCall
   );
 };
 
+UdpSocket.prototype.sendBytes = function(ip, port, bytes, successCallback, errorCallback) {
+  if (this.isClosed) {
+    return;
+  }
+  exec(
+    function() {
+      if (successCallback) {
+        successCallback(this);
+      }
+    },
+    function(message) {
+      if (errorCallback) {
+        errorCallback(message);
+      }
+    },
+    'FlcUdpSocket',
+    'sendBytes',
+    [this.id, ip, parseInt(port), bytes]
+  );
+};
+
 UdpSocket.prototype.broadcast = function(port, packet, successCallback, errorCallback) {
   if (this.isClosed) {
     return;
@@ -87,6 +108,27 @@ UdpSocket.prototype.broadcast = function(port, packet, successCallback, errorCal
   );
 };
 
+UdpSocket.prototype.broadcastBytes = function(port, bytes, successCallback, errorCallback) {
+  if (this.isClosed) {
+    return;
+  }
+  exec(
+    function() {
+      if (successCallback) {
+        successCallback(this);
+      }
+    },
+    function(message) {
+      if (errorCallback) {
+        errorCallback(message);
+      }
+    },
+    'FlcUdpSocket',
+    'broadcastBytes',
+    [this.id, parseInt(port), bytes]
+  );
+};
+
 UdpSocket.prototype.receive = function(port, nextCallback, errorCallback) {
   if (this.isClosed) {
     return;
@@ -105,6 +147,28 @@ UdpSocket.prototype.receive = function(port, nextCallback, errorCallback) {
     },
     'FlcUdpSocket',
     'receive',
+    [this.id, parseInt(port), receiveCallback]
+  );
+};
+
+UdpSocket.prototype.receiveBytes = function(port, nextCallback, errorCallback) {
+  if (this.isClosed) {
+    return;
+  }
+  function receiveCallback(payload) {
+    if (nextCallback) {
+      nextCallback(payload.ip, payload.port, payload.bytes);
+    }
+  }
+  exec(
+    receiveCallback,
+    function(message) {
+      if (errorCallback) {
+        errorCallback(message);
+      }
+    },
+    'FlcUdpSocket',
+    'receiveBytes',
     [this.id, parseInt(port), receiveCallback]
   );
 };

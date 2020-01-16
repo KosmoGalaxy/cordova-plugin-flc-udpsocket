@@ -6,12 +6,15 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 
 public class Socket extends DatagramSocket {
 
   public interface ReceiveCallback {
+
+    void next(String ip, int port, byte[] bytes);
 
     void next(String ip, int port, String packet);
 
@@ -36,13 +39,12 @@ public class Socket extends DatagramSocket {
     _setTrafficClass();
   }
 
-  public String send(String ip, int port, String packetString) {
+  public String send(String ip, int port, byte[] bytes) {
     if (isClosed()) {
       return "socket is closed";
     }
     try {
 //      FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "send. id=%d address=%s:%d packet=%s", id(), ip, port, packetString.substring(0, 100)));
-      byte[] bytes = packetString.getBytes();
       DatagramPacket packet = new DatagramPacket(bytes, bytes.length, InetAddress.getByName(ip), port);
       send(packet);
       return null;
@@ -52,7 +54,7 @@ public class Socket extends DatagramSocket {
     }
   }
 
-  public String broadcast(int port, String packetString) {
+  public String broadcast(int port, byte[] bytes) {
     if (isClosed()) {
       return "socket is closed";
     }
@@ -60,17 +62,16 @@ public class Socket extends DatagramSocket {
     try {
 //      FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "broadcast. id=%d port=%d packet=%s", id(), port, packetString.substring(0, 100)));
       address = FlcUdpSocketPlugin.getBroadcastAddress();
-      byte[] bytes = packetString.getBytes();
       DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, port);
       send(packet);
       return null;
     } catch (Exception e) {
-      FlcUdpSocketPlugin.logError(String.format(Locale.ENGLISH, "broadcast error. id=%d ip=%s port=%d packet=%s message=%s", id(), address, port, packetString, e.getMessage()));
+      FlcUdpSocketPlugin.logError(String.format(Locale.ENGLISH, "broadcast error. id=%d message=%s", id(), e.getMessage()));
       return e.getMessage();
     }
   }
 
-  public void receive(int port, ReceiveCallback callback) {
+  public void receive(int port, ReceiveFormat format, ReceiveCallback callback) {
     if (isClosed()) {
       callback.error("socket is closed");
       return;
@@ -82,8 +83,8 @@ public class Socket extends DatagramSocket {
         FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "already bound. id=%d port=%d", id(), getLocalPort()));
       }
       FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "receive start. id=%d port=%d", id(), getLocalPort()));
-      byte[] bytes = new byte[65507];
-      DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
+      byte[] buffer = new byte[65507];
+      DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
       /*long startTime = System.currentTimeMillis();
       boolean accept = false;*/
       while (!isClosed()) {
@@ -95,15 +96,21 @@ public class Socket extends DatagramSocket {
             continue;
           }
         }*/
-        String inPacketString = new String(packet.getData(), 0, packet.getLength());
+
         String inIp = packet.getAddress().getHostAddress();
-        int inPort = packet.getPort();
-        String myIp = FlcUdpSocketPlugin.getOwnIp();
-        if (!FlcUdpSocketPlugin.receiveFromOwnIp() && inIp.equals(myIp)) {
+
+        if (!FlcUdpSocketPlugin.receiveFromOwnIp() && inIp.equals(FlcUdpSocketPlugin.getOwnIp()))
           continue;
+
+        int inPort = packet.getPort();
+
+        if (format == ReceiveFormat.String) {
+          String inPacketString = new String(packet.getData(), 0, packet.getLength());
+          callback.next(inIp, inPort, inPacketString);
+        } else {
+          byte[] bytes = Arrays.copyOfRange(packet.getData(), 0, packet.getLength());
+          callback.next(inIp, inPort, bytes);
         }
-//        FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "receive. id=%d myIp=%s address=%s:%d packet=%s", id(), myIp, inIp, inPort, inPacketString.substring(0, 100)));
-        callback.next(inIp, inPort, inPacketString);
       }
     } catch (Exception e) {
       FlcUdpSocketPlugin.logError(String.format(Locale.ENGLISH, "receive error. id=%d port=%d message=%s", id(), port, e.getMessage()));
