@@ -66,7 +66,7 @@ UdpSocket.prototype.send = function(ip, port, packet, successCallback, errorCall
   );
 };
 
-UdpSocket.prototype.sendBytes = function(ip, port, bytes, successCallback, errorCallback) {
+UdpSocket.prototype.sendBytes = function(ip, port, buffer, successCallback, errorCallback) {
   if (this.isClosed) {
     return;
   }
@@ -83,7 +83,7 @@ UdpSocket.prototype.sendBytes = function(ip, port, bytes, successCallback, error
     },
     'FlcUdpSocket',
     'sendBytes',
-    [this.id, ip, parseInt(port), bytes]
+    [this.id, ip, parseInt(port), buffer]
   );
 };
 
@@ -108,7 +108,7 @@ UdpSocket.prototype.broadcast = function(port, packet, successCallback, errorCal
   );
 };
 
-UdpSocket.prototype.broadcastBytes = function(port, bytes, successCallback, errorCallback) {
+UdpSocket.prototype.broadcastBytes = function(port, buffer, successCallback, errorCallback) {
   if (this.isClosed) {
     return;
   }
@@ -125,7 +125,7 @@ UdpSocket.prototype.broadcastBytes = function(port, bytes, successCallback, erro
     },
     'FlcUdpSocket',
     'broadcastBytes',
-    [this.id, parseInt(port), bytes]
+    [this.id, parseInt(port), buffer]
   );
 };
 
@@ -157,7 +157,12 @@ UdpSocket.prototype.receiveBytes = function(port, nextCallback, errorCallback) {
   }
   function receiveCallback(payload) {
     if (nextCallback) {
-      nextCallback(payload.ip, payload.port, payload.bytes);
+      const dv = new DataView(payload);
+      const ipLength = dv.getInt8(0);
+      const ip = String.fromCharCode.apply(null, new Uint8Array(payload.slice(1, 1 + ipLength)));
+      const port = dv.getInt16(1 + ipLength);
+      const buffer = payload.slice(1 + ipLength + 2);
+      nextCallback(ip, port, buffer);
     }
   }
   exec(
