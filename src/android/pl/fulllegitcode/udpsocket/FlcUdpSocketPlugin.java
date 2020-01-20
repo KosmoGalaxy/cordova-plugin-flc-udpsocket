@@ -20,7 +20,9 @@ import org.json.JSONObject;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Locale;
 
 import static android.content.Context.WIFI_SERVICE;
@@ -340,10 +342,15 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
           public void next(String ip, int port, byte[] bytes)
           {
             try {
-              JSONObject payload = new JSONObject();
-              payload.put("ip", ip);
-              payload.put("port", port);
-              payload.put("bytes", bytes);
+              int ipLength = ip.length();
+              int bytesLength = bytes.length;
+              int length = 1 + ipLength + 2 + bytesLength;
+              byte[] payload = new byte[length];
+              ByteBuffer bb = ByteBuffer.wrap(payload);
+              bb.put((byte) ipLength);
+              System.arraycopy(ip.getBytes(), 0, payload, 1, ipLength);
+              bb.putShort(1 + ipLength, (short) port);
+              System.arraycopy(bytes, 0, payload, 1 + ipLength + 2, bytesLength);
               PluginResult result = new PluginResult(PluginResult.Status.OK, payload);
               result.setKeepCallback(true);
               callbackContext.sendPluginResult(result);
