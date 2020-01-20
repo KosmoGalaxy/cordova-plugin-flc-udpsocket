@@ -26,6 +26,7 @@
         </config-file>
 
         <source-file src="src/android/pl/fulllegitcode/udpsocket/FlcUdpSocketPlugin.java" target-dir="src/pl/fulllegitcode/udpsocket" />
+        <source-file src="src/android/pl/fulllegitcode/udpsocket/ReceiveFormat.java" target-dir="src/pl/fulllegitcode/udpsocket" />
         <source-file src="src/android/pl/fulllegitcode/udpsocket/Socket.java" target-dir="src/pl/fulllegitcode/udpsocket" />
     </platform>
     
