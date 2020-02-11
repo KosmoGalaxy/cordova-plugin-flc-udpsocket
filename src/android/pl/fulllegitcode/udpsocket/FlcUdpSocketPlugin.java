@@ -75,6 +75,10 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     Log.e("FlcUdpSocket", message);
   }
 
+  public static void logWarn(String message) {
+    Log.w("FlcUdpSocket", message);
+  }
+
 
   private ArrayList<Execution> _executions = new ArrayList<Execution>();
   private ArrayList<Socket> _sockets = new ArrayList<Socket>();
@@ -447,18 +451,28 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
   }
 
   private InetAddress _getBroadcastAddress() throws UnknownHostException {
-    Context context = cordova.getActivity().getApplicationContext();
-    WifiManager myWifiManager = (WifiManager) context.getSystemService(WIFI_SERVICE);
-    DhcpInfo myDhcpInfo = myWifiManager.getDhcpInfo();
-    if (myDhcpInfo == null) {
-      return null;
+    try
+    {
+      Context context = cordova.getActivity().getApplicationContext();
+      WifiManager myWifiManager = (WifiManager) context.getSystemService(WIFI_SERVICE);
+      DhcpInfo myDhcpInfo = myWifiManager.getDhcpInfo();
+      if (myDhcpInfo == null)
+      {
+        return null;
+      }
+      int broadcast = (myDhcpInfo.ipAddress & myDhcpInfo.netmask) | ~myDhcpInfo.netmask;
+      byte[] quads = new byte[4];
+      for (int k = 0; k < 4; k++)
+      {
+        quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
+      }
+      return InetAddress.getByAddress(quads);
     }
-    int broadcast = (myDhcpInfo.ipAddress & myDhcpInfo.netmask) | ~myDhcpInfo.netmask;
-    byte[] quads = new byte[4];
-    for (int k = 0; k < 4; k++) {
-      quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
+    catch (Exception e)
+    {
+      logWarn(String.format(Locale.ENGLISH, "could not resolve broadcast address. using universal broadcast address"));
+      return InetAddress.getByName("255.255.255.255");
     }
-    return InetAddress.getByAddress(quads);
   }
 
 }

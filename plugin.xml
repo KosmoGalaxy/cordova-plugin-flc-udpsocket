@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android"
-        id="cordova-plugin-flc-udpsocket" version="1.6.1">
+        id="cordova-plugin-flc-udpsocket" version="1.6.2">
     <name>cordova-plugin-flc-udpsocket</name>
     <description>Cordova FullLegitCode UDP Socket Plugin</description>
     <license>Apache 2.0</license>
@@ -46,17 +46,5 @@
       <source-file src="src/ios/pl/fulllegitcode/udpsocket/UDPSocket.swift" />
       <source-file src="src/ios/pl/fulllegitcode/udpsocket/UDPResult.swift" />
       <source-file src="src/ios/pl/fulllegitcode/udpsocket/FlcUdpSocketPlugin.swift" />
-    </platform>
-
-    <platform name="windows">
-        <js-module src="src/windows/flc-udpsocket-proxy.js" name="FlcUdpSocketProxy">
-            <runs />
-        </js-module>
-
-        <framework src="src/windows/FullLegitCode.UdpSocket.winmd" custom="true" />
-
-        <config-file target="package.appxmanifest" parent="/Package/Capabilities">
-            <Capability Name="privateNetworkClientServer" />
-        </config-file>
     </platform>
 </plugin>
