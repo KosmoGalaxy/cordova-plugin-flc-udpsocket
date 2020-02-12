@@ -57,10 +57,9 @@ public class Socket extends DatagramSocket {
     if (isClosed()) {
       return "socket is closed";
     }
-    InetAddress address = null;
     try {
 //      FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "broadcast. id=%d port=%d packet=%s", id(), port, packetString.substring(0, 100)));
-      address = FlcUdpSocketPlugin.getBroadcastAddress();
+      InetAddress address = FlcUdpSocketPlugin.getBroadcastAddress();
       DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, port);
       send(packet);
       return null;

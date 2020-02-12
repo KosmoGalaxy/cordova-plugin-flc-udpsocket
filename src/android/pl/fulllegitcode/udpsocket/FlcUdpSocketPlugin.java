@@ -458,7 +458,8 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
       DhcpInfo myDhcpInfo = myWifiManager.getDhcpInfo();
       if (myDhcpInfo == null)
       {
-        return null;
+        logWarn("could not resolve broadcast address. using default broadcast address");
+        return InetAddress.getByName("255.255.255.255");
       }
       int broadcast = (myDhcpInfo.ipAddress & myDhcpInfo.netmask) | ~myDhcpInfo.netmask;
       byte[] quads = new byte[4];
@@ -470,7 +471,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     }
     catch (Exception e)
     {
-      logWarn(String.format(Locale.ENGLISH, "could not resolve broadcast address. using universal broadcast address"));
+      logWarn("could not resolve broadcast address. using default broadcast address");
       return InetAddress.getByName("255.255.255.255");
     }
   }
