@@ -261,6 +261,9 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
         _close(args.getInt(0), callbackContext);
     } catch (Exception e) {
       logError(String.format(Locale.ENGLISH, "error. message=%s", e.getMessage()));
+
+      for (StackTraceElement element : e.getStackTrace())
+        logError(element.toString());
     }
   }
 
@@ -396,10 +399,6 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     }
   }
 
-  private boolean _socketExists(int id) {
-    return _sockets.get(id) != null;
-  }
-
   private Socket _getSocket(int id) {
     /*logDebug(String.format(Locale.ENGLISH, "sockets. numSockets=%d", _sockets.size()));*/
     for (int i = 0; i < _sockets.size(); i++) {
@@ -412,8 +411,8 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
   }
 
   private String _closeSocket(int id) {
-    if (_socketExists(id)) {
-      Socket socket = _getSocket(id);
+    Socket socket = _getSocket(id);
+    if (socket != null) {
       return _closeSocket(socket);
     } else {
       String reason = "socket not found";
@@ -426,6 +425,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     if (!socket.isClosed()) {
       log(String.format(Locale.ENGLISH, "close. id=%d", socket.id()));
       socket.close();
+      _sockets.remove(socket);
       return null;
     } else {
       String reason = "socket already closed";
