@@ -351,13 +351,13 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
             try {
               int ipLength = ip.length();
               int bytesLength = bytes.length;
-              int length = 1 + ipLength + 2 + bytesLength;
+              int length = 1 + ipLength + 4 + bytesLength;
               byte[] payload = new byte[length];
               ByteBuffer bb = ByteBuffer.wrap(payload);
               bb.put((byte) ipLength);
               System.arraycopy(ip.getBytes(), 0, payload, 1, ipLength);
-              bb.putShort(1 + ipLength, (short) port);
-              System.arraycopy(bytes, 0, payload, 1 + ipLength + 2, bytesLength);
+              bb.putInt(1 + ipLength, port);
+              System.arraycopy(bytes, 0, payload, 1 + ipLength + 4, bytesLength);
               PluginResult result = new PluginResult(PluginResult.Status.OK, payload);
               result.setKeepCallback(true);
               callbackContext.sendPluginResult(result);

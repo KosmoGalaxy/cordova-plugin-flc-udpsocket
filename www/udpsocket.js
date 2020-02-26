@@ -160,8 +160,8 @@ UdpSocket.prototype.receiveBytes = function(port, nextCallback, errorCallback) {
       const dv = new DataView(payload);
       const ipLength = dv.getInt8(0);
       const ip = String.fromCharCode.apply(null, new Uint8Array(payload.slice(1, 1 + ipLength)));
-      const port = dv.getInt16(1 + ipLength);
-      const buffer = payload.slice(1 + ipLength + 2);
+      const port = dv.getInt32(1 + ipLength);
+      const buffer = payload.slice(1 + ipLength + 4);
       nextCallback(ip, port, buffer);
     }
   }
