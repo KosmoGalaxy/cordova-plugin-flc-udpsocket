@@ -1,6 +1,10 @@
-## version 1.5.0 ##
+## version 1.6.1 ##
 
 ### Changes: ###
+#### 1.6.1 ####
+- some fixes
+#### 1.6.0 ####
+- implemented sending and receiving raw bytes in Android
 #### 1.5.0 ####
 - changed receive buffer size to 65507
 - removed windows platform support
