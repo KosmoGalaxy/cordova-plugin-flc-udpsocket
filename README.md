@@ -1,6 +1,8 @@
-## version 1.6.1 ##
+## version 1.7.0 ##
 
 ### Changes: ###
+#### 1.7.0 ####
+- implemented sending and receiving raw bytes in iOS
 #### 1.6.1 ####
 - some fixes
 #### 1.6.0 ####

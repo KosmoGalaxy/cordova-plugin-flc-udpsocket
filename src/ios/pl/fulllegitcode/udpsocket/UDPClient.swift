@@ -31,6 +31,23 @@ open class UDPClient: UDPSocket {
       return .failure(UDPSocketError.unknownError)
     }
   }
+
+  open func sendBytes(toIp: String, toPort: Int32, packet: [UInt8]) -> UDPResult {
+      guard let fd = self.fd else { return .failure(UDPSocketError.connectionClosed) }
+      let pointer: UnsafePointer<Int8> = UnsafeRawPointer(packet).assumingMemoryBound(to: Int8.self)
+      let sendsize = flc_udpsocket_sendto(fd, pointer, Int32(packet.count), toIp, toPort)
+      if sendsize == Int32(packet.count) {
+        return .success
+      } else {
+        let errcode = UDPSocket.getSocketErrorCode(fd);
+        if (errcode == 9) {
+          print("socket error_code: bad file descriptor");
+          self.close();
+          return .failure(UDPSocketError.connectionClosed)
+        }
+        return .failure(UDPSocketError.unknownError)
+      }
+    }
   
   open func broadcast(toPort: Int32, packet: String) -> UDPResult {
     guard let fd = self.fd else { return .failure(UDPSocketError.connectionClosed) }
@@ -48,6 +65,23 @@ open class UDPClient: UDPSocket {
       return .failure(UDPSocketError.unknownError)
     }
   }
+
+  open func broadcastBytes(toPort: Int32, packet: [UInt8]) -> UDPResult {
+      guard let fd = self.fd else { return .failure(UDPSocketError.connectionClosed) }
+      let pointer: UnsafePointer<Int8> = UnsafeRawPointer(packet).assumingMemoryBound(to: Int8.self)
+      let sendsize = flc_udpsocket_broadcast(fd, pointer, Int32(packet.count), address, toPort)
+      if sendsize == Int32(packet.count) {
+        return .success
+      } else {
+        let errcode = UDPSocket.getSocketErrorCode(fd);
+        if (errcode == 9) {
+          print("socket error_code: bad file descriptor");
+          self.close();
+          return .failure(UDPSocketError.connectionClosed)
+        }
+        return .failure(UDPSocketError.unknownError)
+      }
+    }
   
   open func bind(port: Int32) -> UDPResult {
     if isBound {

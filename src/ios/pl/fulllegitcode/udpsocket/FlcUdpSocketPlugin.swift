@@ -82,6 +82,33 @@ import Foundation
       self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     })
   }
+
+  @objc(sendBytes:) func sendBytes(command: CDVInvokedUrlCommand) {
+      let socketId: Int = command.argument(at: 0) as! Int
+      let ip: String = command.argument(at: 1) as! String
+      let port: Int = command.argument(at: 2) as! Int
+      let data = command.argument(at: 3) as! Data;
+      let packet: [UInt8] = [UInt8](data);
+      self.commandDelegate!.run(inBackground: {
+        var pluginResult: CDVPluginResult
+        let socket = self.sockets[socketId]
+        if socket != nil {
+          do {
+            try socket!.sendBytes(toIp: ip, toPort: Int32(port), packet: packet)
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
+          } catch FlcUdpSocketError.socketClosed {
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "Send failed. Socket closed.")
+          } catch FlcUdpSocketError.sendFailed {
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "Send failed.")
+          } catch {
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "Send failed. Unknown error.")
+          }
+        } else {
+          pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "Invalid socketId")
+        }
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+      })
+    }
   
   @objc(broadcast:) func broadcast(command: CDVInvokedUrlCommand) {
     let socketId: Int = command.argument(at: 0) as! Int
@@ -107,6 +134,32 @@ import Foundation
       self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     })
   }
+
+  @objc(broadcastBytes:) func broadcastBytes(command: CDVInvokedUrlCommand) {
+      let socketId: Int = command.argument(at: 0) as! Int
+      let port: Int = command.argument(at: 1) as! Int
+      let data = command.argument(at: 2) as! Data;
+      let packet: [UInt8] = [UInt8](data);
+      self.commandDelegate!.run(inBackground: {
+        var pluginResult: CDVPluginResult
+        let socket = self.sockets[socketId]
+        if socket != nil {
+          do {
+            try socket!.broadcastBytes(toPort: Int32(port), packet: packet)
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
+          } catch FlcUdpSocketError.socketClosed {
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "Broadcast failed. Socket closed.")
+          } catch FlcUdpSocketError.sendFailed {
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "Broadcast failed.")
+          } catch {
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "Broadcast failed. Unknown error.")
+          }
+        } else {
+          pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "Invalid socketId")
+        }
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+      })
+    }
   
   @objc(receive:) func receive(command: CDVInvokedUrlCommand) {
     let socketId: Int = command.argument(at: 0) as! Int
@@ -137,6 +190,40 @@ import Foundation
       }
     })
   }
+
+  @objc(receiveBytes:) func receiveBytes(command: CDVInvokedUrlCommand) {
+      let socketId: Int = command.argument(at: 0) as! Int
+      let port: Int = command.argument(at: 1) as! Int
+      self.commandDelegate!.run(inBackground: {
+        var pluginResult: CDVPluginResult
+        let socket = self.sockets[socketId]
+        if socket != nil {
+          do {
+            try socket!.receiveBytes(port: Int32(port)) { ip, port, packet in
+              var buffer = [UInt8]()
+              buffer.append(UInt8(strlen(ip)))
+              buffer.append(contentsOf: [UInt8](Data(ip.utf8)))
+              buffer.append(contentsOf: withUnsafeBytes(of: Int32(port).bigEndian, Array.init))
+              buffer.append(contentsOf: packet)
+              let pluginResultReceive = CDVPluginResult(status: CDVCommandStatus_OK, messageAsArrayBuffer: Data(buffer))
+              pluginResultReceive!.setKeepCallbackAs(true)
+              self.commandDelegate.send(pluginResultReceive!, callbackId: command.callbackId)
+            }
+          } catch FlcUdpSocketError.socketClosed {
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "Receive failed. Socket closed.")
+          } catch FlcUdpSocketError.alreadyBound {
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "Receive failed. Socket already bound.")
+          } catch FlcUdpSocketError.bindFailed {
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "Receive failed. Socket bind failed.")
+          } catch {
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "Receive failed. Unknown error.")
+          }
+        } else {
+          pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "Invalid socketId")
+          self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+        }
+      })
+    }
   
   @objc(close:) func close(command: CDVInvokedUrlCommand) {
     let socketId: Int = command.argument(at: 0) as! Int

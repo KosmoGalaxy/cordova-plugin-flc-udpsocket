@@ -48,6 +48,22 @@ class FlcUdpSocket {
       throw FlcUdpSocketError.sendFailed
     }
   }
+
+  func sendBytes(toIp: String, toPort: Int32, packet: [UInt8]) throws {
+  	if closed {
+  	  throw FlcUdpSocketError.socketClosed
+  	}
+  	switch client!.sendBytes(toIp: toIp, toPort: toPort, packet: packet) {
+  	case .success:
+  	  break
+  	case .failure(let error):
+  	  if (error as! UDPSocketError) == UDPSocketError.connectionClosed {
+  		throw FlcUdpSocketError.socketClosed
+  	  }
+  	  print("Send error", error)
+  	  throw FlcUdpSocketError.sendFailed
+  	}
+  }
   
   func broadcast(toPort: Int32, packet: String) throws {
     if closed {
@@ -63,6 +79,22 @@ class FlcUdpSocket {
       print("Broadcast error", error)
       throw FlcUdpSocketError.sendFailed
     }
+  }
+
+  func broadcastBytes(toPort: Int32, packet: [UInt8]) throws {
+      if closed {
+        throw FlcUdpSocketError.socketClosed
+      }
+      switch client!.broadcastBytes(toPort: toPort, packet: packet) {
+      case .success:
+        break
+      case .failure(let error):
+        if (error as! UDPSocketError) == UDPSocketError.connectionClosed {
+        throw FlcUdpSocketError.socketClosed
+        }
+        print("Broadcast error", error)
+        throw FlcUdpSocketError.sendFailed
+      }
   }
  
   func receive(port: Int32, callback: (_ ip: String, _ port: Int,  _ packet: String) -> ()) throws {
@@ -89,6 +121,31 @@ class FlcUdpSocket {
         }
       }
     }
+  }
+
+  func receiveBytes(port: Int32, callback: (_ ip: String, _ port: Int,  _ packet: [UInt8]) -> ()) throws {
+   if closed {
+     throw FlcUdpSocketError.socketClosed
+   }
+
+   if client!.isBound {
+     throw FlcUdpSocketError.alreadyBound
+   }
+
+   _ = client!.bind(port: port)
+
+   while !closed {
+     let (data, address, port) = client!.recv(UDP_BUFFER_SIZE)
+     if data != nil {
+  	 if receiveFromOwnIp {
+  	   callback(address, port, data!)
+  	 } else {
+  	   if address != serverIp! {
+  		 callback(address, port, data!)
+  	   }
+  	 }
+     }
+   }
   }
   
   func close() throws {
