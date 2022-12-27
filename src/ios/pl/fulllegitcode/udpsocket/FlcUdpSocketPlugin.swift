@@ -22,6 +22,12 @@ import Foundation
     super.pluginInitialize()
   }
   
+  @objc(initialize:) func initialize(command: CDVInvokedUrlCommand) {
+    sockets = [Int: FlcUdpSocket]()
+    let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
+    self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+  }
+  
   @objc(setDebug:) func setDebug(command: CDVInvokedUrlCommand) {
     isDebug = command.argument(at: 0) as? Bool ?? false
     self.commandDelegate!.run(inBackground: {

@@ -22,14 +22,14 @@
 int flc_udpsocket_create() {
   int socketfd = socket(AF_INET, SOCK_DGRAM, 0);
   int r = -1, s = -1, n = -1;
-  
+
   int broadcaston = 1;
   int reuseon = 1;
   int nosigpipeon = 1;
   r = setsockopt(socketfd, SOL_SOCKET, SO_BROADCAST, &broadcaston, sizeof(broadcaston));
   s = setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &reuseon, sizeof(reuseon));
   n = setsockopt(socketfd, SOL_SOCKET, SO_NOSIGPIPE, &nosigpipeon, sizeof(nosigpipeon));
-  
+
   if (r == 0 & s == 0 & n == 0) {
     return socketfd;
   } else {
@@ -69,24 +69,24 @@ int flc_udpsocket_sendto(int socketfd, const char *msg, int len, const char *toa
   address.sin_port = htons(toport);
   address.sin_addr.s_addr = inet_addr(toaddr);
   int sendlen = (int)sendto(socketfd, msg, len, 0, (struct sockaddr *)&address, sizeof(address));
-  
+
   return sendlen;
 }
 
-int flc_udpsocket_broadcast(int socketfd, const char *msg, int len, const char *address, int toport) {
+int flc_udpsocket_broadcast(int socketfd, const char *msg, int len, int toport) {
   char broadcast_address[NI_MAXHOST];
   int r = flc_udpsocket_get_broadcast_address(broadcast_address);
   if (r == -1) {
     return -1;
   }
-  
+
   struct sockaddr_in send_address;
   memset(&send_address, 0x0, sizeof(struct sockaddr_in));
   send_address.sin_family = AF_INET;
   send_address.sin_port = htons(toport);
   inet_pton(AF_INET, broadcast_address, &send_address.sin_addr);
   int sendlen = (int)sendto(socketfd, msg, len, 0, (struct sockaddr *)&send_address, sizeof(send_address));
-  
+
   return sendlen;
 }
 
@@ -94,23 +94,23 @@ int flc_udpsocket_get_broadcast_address(char* broadcast_address) {
   struct ifaddrs address;
   int r = flc_udpsocket_get_ifaddrs(&address);
   if (r != 0) {
-    printf("flc_udpsocket_get_ifaddrs() failed\n"); 
+    printf("flc_udpsocket_get_ifaddrs() failed\n");
     return -1;
   }
-  
+
   char ip[NI_MAXHOST], netmask[NI_MAXHOST];
   int s = getnameinfo(address.ifa_addr, sizeof(struct sockaddr_in), ip, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
   if (s != 0) {
     printf("getnameinfo() failed: %s\n", gai_strerror(s));
     return -1;
   }
-  
+
   s = getnameinfo(address.ifa_netmask, sizeof(struct sockaddr_in), netmask, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
   if (s != 0) {
     printf("getnameinfo() failed: %s\n", gai_strerror(s));
     return -1;
   }
-  
+
   struct in_addr host, mask, broadcast;
   if (inet_pton(AF_INET, ip, &host) == 1 && inet_pton(AF_INET, netmask, &mask) == 1) {
     broadcast.s_addr = host.s_addr | ~mask.s_addr;
@@ -127,28 +127,28 @@ int flc_udpsocket_get_broadcast_address(char* broadcast_address) {
 int flc_udpsocket_get_ifaddrs(struct ifaddrs *address) {
   struct ifaddrs *ifaddr, *ifa;
   int family, n;
-  
+
   if (getifaddrs(&ifaddr) == -1) {
     perror("getifaddrs");
     return -1;
   }
-   
+
   int ifOk = -1;
-  
+
   for (ifa = ifaddr, n = 0; ifa != NULL; ifa = ifa->ifa_next, n++) {
     if (ifa->ifa_addr == NULL) continue;
     if (ifa->ifa_flags & IFF_LOOPBACK) continue;
     if (!(ifa->ifa_flags & IFF_BROADCAST) || ifa->ifa_dstaddr == NULL) continue;
-    
+
     family = ifa->ifa_addr->sa_family;
     if (family != AF_INET) continue;
-    
+
     if (strcmp(ifa->ifa_name, "bridge100") == 0) {
       memcpy(address, ifa, sizeof(struct ifaddrs));
       ifOk = 0;
       break;
     }
-    
+
     if (strcmp(ifa->ifa_name, "en0") == 0) {
       memcpy(address, ifa, sizeof(struct ifaddrs));
       ifOk = 0;
@@ -159,7 +159,7 @@ int flc_udpsocket_get_ifaddrs(struct ifaddrs *address) {
       printf("No valid interface found\n");
       return -1;
   }
-  
+
   freeifaddrs(ifaddr);
   return 0;
 }

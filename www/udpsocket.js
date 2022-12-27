@@ -1,5 +1,13 @@
+cordova.define("cordova-plugin-flc-udpsocket.FlcUdpSocket", function(require, exports, module) {
 const exec = require('cordova/exec');
 let nextId = 1;
+
+exec(
+  function() {},
+  function() {},
+  'FlcUdpSocket',
+  'initialize'
+);
 
 function UdpSocket() {
   this.id = nextId++;
@@ -201,3 +209,5 @@ UdpSocket.prototype.close = function(successCallback, errorCallback) {
 };
 
 module.exports = UdpSocket;
+
+});
