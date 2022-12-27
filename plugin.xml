@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android"
-        id="cordova-plugin-flc-udpsocket" version="1.7.0">
+        id="cordova-plugin-flc-udpsocket" version="1.7.1">
     <name>cordova-plugin-flc-udpsocket</name>
     <description>Cordova FullLegitCode UDP Socket Plugin</description>
     <license>Apache 2.0</license>
@@ -29,14 +29,14 @@
         <source-file src="src/android/pl/fulllegitcode/udpsocket/ReceiveFormat.java" target-dir="src/pl/fulllegitcode/udpsocket" />
         <source-file src="src/android/pl/fulllegitcode/udpsocket/Socket.java" target-dir="src/pl/fulllegitcode/udpsocket" />
     </platform>
-    
+
     <platform name="ios">
       <config-file target="config.xml" parent="/*">
         <feature name="FlcUdpSocket">
           <param name="ios-package" value="FlcUdpSocketPlugin" />
         </feature>
       </config-file>
-      
+
       <header-file src="src/ios/pl/fulllegitcode/udpsocket/FlcUdpUtilObjectiveC.h" />
       <source-file src="src/ios/pl/fulllegitcode/udpsocket/FlcUdpUtilObjectiveC.m" />
       <header-file src="src/ios/pl/fulllegitcode/udpsocket/flcudpsocket.h" />
