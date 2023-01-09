@@ -5,6 +5,9 @@ iOS test project is out of date.
 
 ## changelog
 
+### 1.7.2
+- fixed dangling pointer issue on ios
+
 ### 1.7.1
 - added initialize method that resets socket list
 
