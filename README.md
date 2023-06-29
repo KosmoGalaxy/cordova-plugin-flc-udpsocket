@@ -1,9 +1,12 @@
-## version 1.7.1
+## version 1.8.0
 
 iOS test project is out of date.
 
 
 ## changelog
+
+### 1.8.0
+- add getBroadcastAddress on Android
 
 ### 1.7.2
 - fixed dangling pointer issue on ios

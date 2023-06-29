@@ -33,6 +33,23 @@ UdpSocket.receiveFromOwnIp = function(value) {
   );
 };
 
+UdpSocket.getBroadcastAddress = function(successCallback, errorCallback) {
+  exec(
+    function(address) {
+      if (successCallback) {
+        successCallback(address);
+      }
+    },
+    function(message) {
+      if (errorCallback) {
+        errorCallback(message);
+      }
+    },
+    'FlcUdpSocket',
+    'getBroadcastAddress'
+  );
+};
+
 UdpSocket.create = function(successCallback, errorCallback) {
   const socket = new UdpSocket();
   exec(

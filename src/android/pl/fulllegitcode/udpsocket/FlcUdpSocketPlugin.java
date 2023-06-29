@@ -133,6 +133,19 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
       });
       return true;
     }
+    if (action.equals("getBroadcastAddress")) {
+      cordova.getThreadPool().execute(new Runnable() {
+        @Override
+        public void run() {
+          try {
+            callbackContext.success(this._getBroadcastAddress().getHostAddress());
+          } catch (JSONException e) {
+            callbackContext.error(e.getMessage());
+          }
+        }
+      });
+      return true;
+    }
     if (action.equals("create") ||
       action.equals("send") ||
       action.equals("sendBytes") ||
