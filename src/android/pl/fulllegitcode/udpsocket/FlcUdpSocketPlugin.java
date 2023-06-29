@@ -139,7 +139,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
         public void run() {
           try {
             callbackContext.success(getBroadcastAddress().getHostAddress());
-          } catch (JSONException e) {
+          } catch (UnknownHostException e) {
             callbackContext.error(e.getMessage());
           }
         }
