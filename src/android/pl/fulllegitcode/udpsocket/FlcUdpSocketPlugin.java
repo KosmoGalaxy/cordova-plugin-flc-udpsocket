@@ -138,7 +138,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
         @Override
         public void run() {
           try {
-            callbackContext.success(this._getBroadcastAddress().getHostAddress());
+            callbackContext.success(getBroadcastAddress().getHostAddress());
           } catch (JSONException e) {
             callbackContext.error(e.getMessage());
           }
