@@ -480,7 +480,9 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
       {
         quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
       }
-      return InetAddress.getByAddress(quads);
+      InetAddress address = InetAddress.getByAddress(quads);
+      logWarn(String.format(Locale.ENGLISH, "getBroadcastAddress %s", address.getHostAddress(), address.getHostName()));
+      return address;
     }
     catch (Exception e)
     {
