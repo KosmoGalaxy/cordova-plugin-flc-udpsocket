@@ -487,7 +487,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
       for (int i = 0; i < 4; i++)
         quads[i] = (byte) ((myDhcpInfo.netmask >> i * 8) & 0xFF);
       InetAddress mask = InetAddress.getByAddress(quads);
-      logWarn(String.format(Locale.ENGLISH, "getBroadcastAddress %s", address.getHostAddress(), ip.getHostAddress(), mask.getHostAddress()));
+      logWarn(String.format(Locale.ENGLISH, "getBroadcastAddress %s %s %s", address.getHostAddress(), ip.getHostAddress(), mask.getHostAddress()));
       return address;
     }
     catch (Exception e)
