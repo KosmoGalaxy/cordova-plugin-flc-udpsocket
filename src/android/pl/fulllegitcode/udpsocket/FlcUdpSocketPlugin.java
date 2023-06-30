@@ -56,7 +56,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     return _instance._getOwnIp();
   }
 
-  public static InetAddress getBroadcastAddress() {
+  public static InetAddress getBroadcastAddress() throws UnknownHostException {
     return _instance._getBroadcastAddress();
   }
 
@@ -72,6 +72,10 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
 
   public static void logError(String message) {
     Log.e("FlcUdpSocket", message);
+  }
+
+  public static void logError(String message, Exception e) {
+    Log.e("FlcUdpSocket", message, e);
   }
 
   public static void logWarn(String message) {
@@ -138,7 +142,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
         public void run() {
           try {
             callbackContext.success(getBroadcastAddress().getHostAddress());
-          } catch (Exception e) {
+          } catch (UnknownHostException e) {
             callbackContext.error(e.getMessage());
           }
         }
@@ -462,7 +466,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
       : "192.168.43.1";
   }
 
-  private InetAddress _getBroadcastAddress() {
+  private InetAddress _getBroadcastAddress() throws UnknownHostException {
     try
     {
       Context context = cordova.getActivity().getApplicationContext();
@@ -482,8 +486,8 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     }
     catch (Exception e)
     {
-      logError(String.format("get broadcast address error: %s\n%s", e.getMessage(), e.getStackTrace()));
-      return InetAddress.getByName("255.255.255.255");
+      logError("get broadcast address error", e);
     }
+    return InetAddress.getByName("255.255.255.255");
   }
 }
