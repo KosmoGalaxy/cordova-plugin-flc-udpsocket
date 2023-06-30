@@ -43,7 +43,8 @@ public class Socket extends DatagramSocket {
       return "socket is closed";
     }
     try {
-      FlcUdpSocketPlugin.logDebug(String.format("send. id=%d address=%s:%d", id(), ip, port));
+      if (FlcUdpSocketPlugin._isDebug)
+        FlcUdpSocketPlugin.logDebug(String.format("send. id=%d address=%s:%d", id(), ip, port));
       DatagramPacket packet = new DatagramPacket(bytes, bytes.length, InetAddress.getByName(ip), port);
       send(packet);
       return null;
@@ -59,7 +60,8 @@ public class Socket extends DatagramSocket {
     }
     try {
       InetAddress address = FlcUdpSocketPlugin.getBroadcastAddress();
-      FlcUdpSocketPlugin.logDebug(String.format("broadcast. id=%d address=%s:%d", id(), address.getHostAddress(), port));
+      if (FlcUdpSocketPlugin._isDebug)
+        FlcUdpSocketPlugin.logDebug(String.format("broadcast. id=%d address=%s:%d", id(), address.getHostAddress(), port));
       DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, port);
       send(packet);
       return null;
@@ -75,12 +77,12 @@ public class Socket extends DatagramSocket {
       return;
     }
     try {
-      if (!isBound()) {
+      if (!isBound())
         bind(new InetSocketAddress(port));
-      } else {
+      else if (FlcUdpSocketPlugin._isDebug)
         FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "already bound. id=%d port=%d", id(), getLocalPort()));
-      }
-      FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "receive start. id=%d port=%d", id(), getLocalPort()));
+      if (FlcUdpSocketPlugin._isDebug)
+        FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "receive start. id=%d port=%d", id(), getLocalPort()));
       byte[] buffer = new byte[65507];
       DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
       /*long startTime = System.currentTimeMillis();

@@ -3,10 +3,6 @@ package pl.fulllegitcode.udpsocket;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.net.ConnectivityManager;
-import android.net.LinkAddress;
-import android.net.LinkProperties;
-import android.net.Network;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
@@ -20,12 +16,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.Locale;
 
 public class FlcUdpSocketPlugin extends CordovaPlugin {
@@ -46,7 +46,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
 
 
   private static FlcUdpSocketPlugin _instance;
-  private static boolean _isDebug = false;
+  public static boolean _isDebug = false;
 
   private static boolean _receiveFromOwnIp = true;
 
@@ -471,28 +471,14 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
   private InetAddress _getBroadcastAddress() throws UnknownHostException {
     try
     {
-      Context context = cordova.getActivity().getApplicationContext();
-      ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-      Network network = cm.getActiveNetwork();
-      if (network == null) {
-        logWarn("get broadcast address: no active network");
-        return InetAddress.getByName("255.255.255.255");
-      }
-      LinkProperties lp = cm.getLinkProperties(network);
-      if (lp == null) {
-        logWarn("get broadcast address: no link properties");
-        return InetAddress.getByName("255.255.255.255");
-      }
-      for (LinkAddress la : lp.getLinkAddresses()) {
-        InetAddress ip = la.getAddress();
-        String ipString = ip.getHostAddress();
-        if (ipString == null || ipString.split("\\.").length != 4)
+      for (Enumeration<NetworkInterface> niEnum = NetworkInterface.getNetworkInterfaces(); niEnum.hasMoreElements();) {
+        NetworkInterface ni = niEnum.nextElement();
+        if (ni.isLoopback() || ni.isPointToPoint())
           continue;
-        int ipInt = ByteBuffer.wrap(ip.getAddress()).getInt();
-        int maskInt = -1 << (32 - la.getPrefixLength());
-        int broadcastInt = (ipInt & maskInt) | ~maskInt;
-        byte[] broadcastBytes = ByteBuffer.allocate(4).putInt(broadcastInt).array();
-        return InetAddress.getByAddress(broadcastBytes);
+        for (InterfaceAddress ia : ni.getInterfaceAddresses()) {
+          if (ia.getAddress() instanceof Inet4Address && ia.getBroadcast() != null)
+            return ia.getBroadcast();
+        }
       }
     }
     catch (Exception e)
