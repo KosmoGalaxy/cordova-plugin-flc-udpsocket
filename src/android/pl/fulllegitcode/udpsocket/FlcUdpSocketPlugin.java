@@ -481,7 +481,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     }
     catch (Exception e)
     {
-      logError(String.format("get broadcast address error: %s\n%s", e.getMessage(), e.getStackTrace());
+      logError(String.format("get broadcast address error: %s\n%s", e.getMessage(), e.getStackTrace()));
       return InetAddress.getByName("255.255.255.255");
     }
   }
