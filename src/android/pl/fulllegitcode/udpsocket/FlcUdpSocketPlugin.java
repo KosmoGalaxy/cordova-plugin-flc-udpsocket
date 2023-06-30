@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.LinkAddress;
 import android.net.LinkProperties;
+import android.net.Network;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
@@ -472,7 +473,16 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     {
       Context context = cordova.getActivity().getApplicationContext();
       ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-      LinkProperties lp = cm.getLinkProperties(cm.getActiveNetwork());
+      Network network = cm.getActiveNetwork();
+      if (network == null) {
+        logWarn("get broadcast address: no active network");
+        return InetAddress.getByName("255.255.255.255");
+      }
+      LinkProperties lp = cm.getLinkProperties(network);
+      if (lp == null) {
+        logWarn("get broadcast address: no link properties");
+        return InetAddress.getByName("255.255.255.255");
+      }
       for (LinkAddress la : lp.getLinkAddresses()) {
         InetAddress ip = la.getAddress();
         String ipString = ip.getHostAddress();
@@ -487,7 +497,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     }
     catch (Exception e)
     {
-      logError("get broadcast address error", e);
+      logError(String.format("get broadcast address error: %s", e.getMessage()));
     }
     return InetAddress.getByName("255.255.255.255");
   }

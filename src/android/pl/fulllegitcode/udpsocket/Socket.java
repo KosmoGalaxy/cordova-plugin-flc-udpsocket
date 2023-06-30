@@ -43,7 +43,12 @@ public class Socket extends DatagramSocket {
       return "socket is closed";
     }
     try {
-//      FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "send. id=%d address=%s:%d packet=%s", id(), ip, port, packetString.substring(0, 100)));
+      FlcUdpSocketPlugin.logDebug(String.format("send. id=%d address=%s:%d packet=%s",
+        id(),
+        ip,
+        port,
+        packetString.substring(0, 100)
+      ));
       DatagramPacket packet = new DatagramPacket(bytes, bytes.length, InetAddress.getByName(ip), port);
       send(packet);
       return null;
@@ -58,8 +63,13 @@ public class Socket extends DatagramSocket {
       return "socket is closed";
     }
     try {
-//      FlcUdpSocketPlugin.logDebug(String.format(Locale.ENGLISH, "broadcast. id=%d port=%d packet=%s", id(), port, packetString.substring(0, 100)));
       InetAddress address = FlcUdpSocketPlugin.getBroadcastAddress();
+      FlcUdpSocketPlugin.logDebug(String.format("broadcast. id=%d address=%s:%d packet=%s",
+        id(),
+        address.getHostAddress(),
+        port,
+        packetString.substring(0, 100)
+      ));
       DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, port);
       send(packet);
       return null;
