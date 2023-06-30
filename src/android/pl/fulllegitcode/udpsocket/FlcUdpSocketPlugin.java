@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.LinkAddress;
 import android.net.LinkProperties;
+import android.net.wifi.WifiManager;
 import android.util.Log;
 
 import org.apache.cordova.CallbackContext;
@@ -454,7 +455,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
 
   private String _getOwnIp() {
     Context context = cordova.getActivity().getApplicationContext();
-    WifiManager wifiManager = (WifiManager) context.getSystemService(WIFI_SERVICE);
+    WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
     int ip = wifiManager.getConnectionInfo().getIpAddress();
     return ip != 0
       ? String.format(Locale.ENGLISH, "%d.%d.%d.%d", (ip & 0xff), (ip >> 8 & 0xff), (ip >> 16 & 0xff), (ip >> 24 & 0xff))
