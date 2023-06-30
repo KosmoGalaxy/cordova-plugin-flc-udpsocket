@@ -3,8 +3,9 @@ package pl.fulllegitcode.udpsocket;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.net.DhcpInfo;
-import android.net.wifi.WifiManager;
+import android.net.ConnectivityManager;
+import android.net.LinkAddress;
+import android.net.LinkProperties;
 import android.util.Log;
 
 import org.apache.cordova.CallbackContext;
@@ -18,16 +19,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.InetAddress;
-import java.net.InterfaceAddress;
-import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
-
-import static android.content.Context.WIFI_SERVICE;
 
 public class FlcUdpSocketPlugin extends CordovaPlugin {
 
@@ -59,7 +55,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
     return _instance._getOwnIp();
   }
 
-  public static InetAddress getBroadcastAddress() throws UnknownHostException {
+  public static InetAddress getBroadcastAddress() {
     return _instance._getBroadcastAddress();
   }
 
@@ -141,7 +137,7 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
         public void run() {
           try {
             callbackContext.success(getBroadcastAddress().getHostAddress());
-          } catch (UnknownHostException e) {
+          } catch (Exception e) {
             callbackContext.error(e.getMessage());
           }
         }
@@ -465,41 +461,28 @@ public class FlcUdpSocketPlugin extends CordovaPlugin {
       : "192.168.43.1";
   }
 
-  private InetAddress _getBroadcastAddress() throws UnknownHostException {
+  private InetAddress _getBroadcastAddress() {
     try
     {
       Context context = cordova.getActivity().getApplicationContext();
-      WifiManager myWifiManager = (WifiManager) context.getSystemService(WIFI_SERVICE);
-      DhcpInfo myDhcpInfo = myWifiManager.getDhcpInfo();
-      if (myDhcpInfo == null)
-      {
-        logWarn("could not resolve broadcast address. using default broadcast address");
-        return InetAddress.getByName("255.255.255.255");
+      ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+      LinkProperties lp = cm.getLinkProperties(cm.getActiveNetwork());
+      for (LinkAddress la : lp.getLinkAddresses()) {
+        InetAddress ip = la.getAddress();
+        String ipString = ip.getHostAddress();
+        if (ipString == null || ipString.split("\\.").length != 4)
+          continue;
+        int ipInt = ByteBuffer.wrap(ip.getAddress()).getInt();
+        int maskInt = -1 << (32 - la.getPrefixLength());
+        int broadcastInt = (ipInt & maskInt) | ~maskInt;
+        byte[] broadcastBytes = ByteBuffer.allocate(4).putInt(broadcastInt).array();
+        return InetAddress.getByAddress(broadcastBytes);
       }
-      int broadcast = (myDhcpInfo.ipAddress & myDhcpInfo.netmask) | ~myDhcpInfo.netmask;
-      byte[] quads = new byte[4];
-      for (int k = 0; k < 4; k++)
-      {
-        quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
-      }
-      InetAddress address = InetAddress.getByAddress(quads);
-      for (int i = 0; i < 4; i++)
-        quads[i] = (byte) ((myDhcpInfo.ipAddress >> i * 8) & 0xFF);
-      InetAddress ip = InetAddress.getByAddress(quads);
-      for (int i = 0; i < 4; i++)
-        quads[i] = (byte) ((myDhcpInfo.netmask >> i * 8) & 0xFF);
-      InetAddress mask = InetAddress.getByAddress(quads);
-      logWarn(String.format(Locale.ENGLISH, "getBroadcastAddress %s %s %s", address.getHostAddress(), ip.getHostAddress(), mask.getHostAddress()));
-      NetworkInterface networkInterface = NetworkInterface.getByInetAddress(ip);
-      for (InterfaceAddress ia : networkInterface.getInterfaceAddresses())
-        logWarn(String.format(Locale.ENGLISH, "interface address %s %s", ia.getAddress().getHostAddress(), ia.getBroadcast().getHostAddress()));
-      return address;
     }
     catch (Exception e)
     {
-      logWarn("could not resolve broadcast address. using default broadcast address");
+      logError(String.format("get broadcast address error: %s\n%s", e.getMessage(), e.getStackTrace());
       return InetAddress.getByName("255.255.255.255");
     }
   }
-
 }
