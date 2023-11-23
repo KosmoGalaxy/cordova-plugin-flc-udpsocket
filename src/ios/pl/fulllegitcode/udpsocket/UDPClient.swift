@@ -39,7 +39,9 @@ open class UDPClient: UDPSocket {
 //       let ipPointer = UnsafeMutablePointer<CChar>(mutating: toIp.cString(using: .utf8))
 //      let pointer: UnsafePointer<Int8> = UnsafeRawPointer(packet).assumingMemoryBound(to: Int8.self)
     return packet.withUnsafeBytes { (ptr: UnsafeRawBufferPointer) -> UDPResult in
-      let sendsize = flc_udpsocket_sendto(fd, ptr.baseAddress, Int32(packet.count), toIp, toPort)
+      flc_udpsocket_sendto(fd, ptr.baseAddress, Int32(packet.count), toIp, toPort)
+      return .success
+      /* let sendsize = flc_udpsocket_sendto(fd, ptr.baseAddress, Int32(packet.count), toIp, toPort)
       if sendsize == Int32(packet.count) {
         return .success
       } else {
@@ -50,7 +52,7 @@ open class UDPClient: UDPSocket {
           return .failure(UDPSocketError.connectionClosed)
         }
         return .failure(UDPSocketError.unknownError)
-      }
+      } */
     }
   }
 
@@ -75,7 +77,9 @@ open class UDPClient: UDPSocket {
   open func broadcastBytes(toPort: Int32, packet: [UInt8]) -> UDPResult {
     guard let fd = self.fd else { return .failure(UDPSocketError.connectionClosed) }
     return packet.withUnsafeBytes { (ptr: UnsafeRawBufferPointer) -> UDPResult in
-      let sendsize = flc_udpsocket_broadcast(fd, ptr.baseAddress, Int32(packet.count), toPort)
+      flc_udpsocket_broadcast(fd, ptr.baseAddress, Int32(packet.count), toPort)
+      return .success
+      /* let sendsize = flc_udpsocket_broadcast(fd, ptr.baseAddress, Int32(packet.count), toPort)
       if sendsize == Int32(packet.count) {
         return .success
       } else {
@@ -86,7 +90,7 @@ open class UDPClient: UDPSocket {
           return .failure(UDPSocketError.connectionClosed)
         }
         return .failure(UDPSocketError.unknownError)
-      }
+      } */
     }
   }
 
