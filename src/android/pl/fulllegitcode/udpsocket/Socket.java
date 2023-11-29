@@ -67,7 +67,7 @@ public class Socket extends DatagramSocket {
       return null;
     } catch (Exception e) {
       FlcUdpSocketPlugin.logError(String.format(Locale.ENGLISH, "broadcast error. id=%d port=%d message=%s", id(), port, e.getMessage()));
-      return null;
+      return e.getMessage();
     }
   }
 
