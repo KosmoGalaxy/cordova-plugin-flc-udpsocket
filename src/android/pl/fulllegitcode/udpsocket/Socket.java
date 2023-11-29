@@ -50,7 +50,7 @@ public class Socket extends DatagramSocket {
       return null;
     } catch (Exception e) {
       FlcUdpSocketPlugin.logError(String.format(Locale.ENGLISH, "send error. id=%d address=%s:%d message=%s", id(), ip, port, e.getMessage()));
-      return null;
+      return e.getMessage();
     }
   }
 
