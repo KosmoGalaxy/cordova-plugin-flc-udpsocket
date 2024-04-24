@@ -5,6 +5,9 @@ iOS test project is out of date.
 
 ## changelog
 
+### 1.8.1
+- fix receive on iOS
+
 ### 1.8.0
 - add getBroadcastAddress on Android
 

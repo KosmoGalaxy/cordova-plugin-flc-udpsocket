@@ -115,14 +115,12 @@ open class UDPClient: UDPSocket {
       let readLen: Int32 = c_flc_udpsocket_receive(fd, buff: buff, len: Int32(expectlen), ip: &remoteipbuff, port: &remoteport)
       let port: Int = Int(remoteport)
       var address = ""
-      if let ip = String(cString: remoteipbuff, encoding: String.Encoding.utf8) {
-        address = ip
-      }
-
       if readLen <= 0 {
         return (nil, address, port)
       }
-
+      if let ip = String(cString: remoteipbuff, encoding: String.Encoding.utf8) {
+        address = ip
+      }
       let rs = buff[0...Int(readLen-1)]
       let data: [UInt8] = Array(rs)
       return (data, address, port)
